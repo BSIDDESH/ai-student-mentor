@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Profile } from "@/app/lib/types";
 import { weakTopics, levelFromXp } from "@/app/lib/helpers";
 import DayArcHero from "./DayArcHero";
@@ -11,9 +11,25 @@ import BadgeShelf from "./BadgeShelf";
 import MentorChat from "./MentorChat";
 import QuizFlow from "./QuizFlow";
 import WellnessPanel from "./WellnessPanel";
+import {
+  SkeletonHero,
+  SkeletonChat,
+  SkeletonQuiz,
+  SkeletonWellness,
+} from "./ui/Skeleton";
 import { Home, MessageCircle, BookOpen, Droplets, LogOut } from "lucide-react";
 
 type Tab = "dashboard" | "chat" | "quiz" | "wellness";
+
+// Delay per tab (ms) — enough to feel intentional, not enough to feel slow.
+// Dashboard is 0 because it has its own progressive hierarchy.
+// Other tabs simulate async component mount.
+const TAB_DELAY: Record<Tab, number> = {
+  dashboard: 0,
+  chat: 250,
+  quiz: 200,
+  wellness: 220,
+};
 
 interface Props {
   profile: Profile;
@@ -23,6 +39,7 @@ interface Props {
 
 export default function DashboardShell({ profile, setProfile, signOut }: Props) {
   const [tab, setTab] = useState<Tab>("dashboard");
+  const [loadingTab, setLoadingTab] = useState<Tab | null>(null);
   const [quizPrefill, setQuizPrefill] = useState<{ subject: string; topic: string } | null>(null);
 
   const level = levelFromXp(profile.xp);
@@ -35,10 +52,35 @@ export default function DashboardShell({ profile, setProfile, signOut }: Props) 
     { id: "wellness",  label: "Wellness", icon: Droplets },
   ];
 
+  // Switch to a tab with a brief skeleton flash so content always "arrives"
+  function switchTab(newTab: Tab) {
+    if (newTab === tab && loadingTab === null) return;
+    const delay = TAB_DELAY[newTab];
+    if (delay > 0) {
+      setLoadingTab(newTab);
+      setTab(newTab);
+      // Clear loading after delay — real API calls would replace this with actual load state
+      const t = setTimeout(() => setLoadingTab(null), delay);
+      return () => clearTimeout(t);
+    } else {
+      setTab(newTab);
+      setLoadingTab(null);
+    }
+  }
+
   function handleWeakTopicClick(subject: string, topic: string) {
     setQuizPrefill({ subject, topic });
-    setTab("quiz");
+    switchTab("quiz");
   }
+
+  // If prefill changes from outside, ensure we switch to quiz
+  useEffect(() => {
+    if (quizPrefill) {
+      switchTab("quiz");
+    }
+  }, [quizPrefill]);
+
+  const isLoading = loadingTab === tab;
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row" style={{ background: "var(--chalk)" }}>
@@ -55,9 +97,7 @@ export default function DashboardShell({ profile, setProfile, signOut }: Props) 
               <span className="font-display text-white text-sm font-bold">AI</span>
             </div>
             <div>
-              <p className="font-display text-base font-bold text-stone-800 leading-none">
-                AI Mentor
-              </p>
+              <p className="font-display text-base font-bold text-stone-800 leading-none">AI Mentor</p>
               <p className="text-sm text-stone-400 mt-1">Study companion</p>
             </div>
           </div>
@@ -94,7 +134,7 @@ export default function DashboardShell({ profile, setProfile, signOut }: Props) 
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => setTab(id)}
+              onClick={() => switchTab(id)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold ${
                 tab === id
                   ? "bg-indigo-600 text-white"
@@ -103,6 +143,10 @@ export default function DashboardShell({ profile, setProfile, signOut }: Props) 
             >
               <Icon size={17} />
               {label}
+              {/* Loading dot on active tab while loading */}
+              {isLoading && tab === id && (
+                <span className="ml-auto w-2 h-2 rounded-full bg-white/60 animate-pulse" />
+              )}
             </button>
           ))}
         </nav>
@@ -125,7 +169,9 @@ export default function DashboardShell({ profile, setProfile, signOut }: Props) 
 
       {/* ── Main content ───────────────────────────────────────────────────── */}
       <main className="flex-1 min-w-0 pb-20 md:pb-8">
-        {tab === "dashboard" && (
+
+        {/* ── DASHBOARD ── */}
+        {tab === "dashboard" && !isLoading && (
           <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
             <DayArcHero profile={profile} />
             {weak.length > 0 && (
@@ -136,24 +182,36 @@ export default function DashboardShell({ profile, setProfile, signOut }: Props) 
             <BadgeShelf earned={profile.badges} />
           </div>
         )}
+        {tab === "dashboard" && isLoading && (
+          /* Dashboard has own staggered render; hero skeleton shown while data resolves */
+          <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+            <SkeletonHero />
+          </div>
+        )}
 
-        {tab === "chat" && <MentorChat profile={profile} />}
+        {/* ── MENTOR CHAT ── */}
+        {tab === "chat" && !isLoading && <MentorChat profile={profile} />}
+        {tab === "chat" && isLoading && <SkeletonChat />}
 
-        {tab === "quiz" && (
+        {/* ── QUIZ ── */}
+        {tab === "quiz" && !isLoading && (
           <QuizFlow
             profile={profile}
             setProfile={setProfile}
             prefill={quizPrefill}
             onDone={() => {
               setQuizPrefill(null);
-              setTab("dashboard");
+              switchTab("dashboard");
             }}
           />
         )}
+        {tab === "quiz" && isLoading && <SkeletonQuiz />}
 
-        {tab === "wellness" && (
+        {/* ── WELLNESS ── */}
+        {tab === "wellness" && !isLoading && (
           <WellnessPanel profile={profile} setProfile={setProfile} />
         )}
+        {tab === "wellness" && isLoading && <SkeletonWellness />}
       </main>
 
       {/* ── Bottom tab bar — mobile only ──────────────────────────────────── */}
@@ -161,13 +219,17 @@ export default function DashboardShell({ profile, setProfile, signOut }: Props) 
         {tabs.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
-            onClick={() => setTab(id)}
-            className={`flex-1 flex flex-col items-center gap-1 py-3 ${
+            onClick={() => switchTab(id)}
+            className={`flex-1 flex flex-col items-center gap-1 py-3 relative ${
               tab === id ? "text-indigo-600" : "text-stone-400"
             }`}
           >
             <Icon size={20} />
             <span className="text-sm font-medium">{label}</span>
+            {/* Active indicator dot */}
+            {tab === id && (
+              <span className="absolute top-1.5 right-1/4 w-1.5 h-1.5 rounded-full bg-indigo-600" />
+            )}
           </button>
         ))}
       </nav>
