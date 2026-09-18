@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+/* ── Design tokens ──────────────────────────────────────────────────────────── */
+:root {
+  /* Palette */
+  --chalk:  #faf9f7;   /* warm white — page background */
+  --mist:   #f0ede8;   /* warm light grey — card section headers */
+  --ink:    #1c1917;   /* warm near-black — primary text */
+  --muted:  #78716c;   /* warm grey — secondary text */
+  --grape:  #4f46e5;   /* indigo-600 — primary accent */
+  --ember:  #f97316;   /* orange — streak counter only */
+
+  /* Fonts */
+  --font-display: var(--font-display, "Space Grotesk", system-ui, sans-serif);
+  --font-body:    var(--font-body,    "Inter", system-ui, sans-serif);
+
+  --background: var(--chalk);
+  --foreground: var(--ink);
+}
+
+/* No dark-mode override — this app is light-only for the hackathon */
+
+/* ── Global resets ──────────────────────────────────────────────────────────── */
+body {
+  background: var(--chalk);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Utility classes usable everywhere ──────────────────────────────────────── */
+
+/* Display font — always use for: names, score numbers, XP, streak */
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* Score band colours */
+.text-score-low    { color: #f43f5e; }   /* rose-500   < 60  */
+.text-score-mid    { color: #f59e0b; }   /* amber-500  60-79 */
+.text-score-high   { color: #10b981; }   /* emerald-500 80+  */
+
+.bg-score-low      { background-color: #fff1f2; }   /* rose-50   */
+.bg-score-mid      { background-color: #fffbeb; }   /* amber-50  */
+.bg-score-high     { background-color: #ecfdf5; }   /* emerald-50 */
+
+/* Badge — earned glow ring */
+.badge-earned {
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+  box-shadow: 0 0 0 2px #a5b4fc, 0 4px 12px 0 rgba(79, 70, 229, 0.15);
+}
+
+/* Badge — locked slot */
+.badge-locked {
+  background: var(--mist);
+  border: 2px dashed #d6d3d1;
+}
