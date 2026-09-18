@@ -17,6 +17,7 @@ import {
   SkeletonQuiz,
   SkeletonWellness,
 } from "./ui/Skeleton";
+import { ToastProvider } from "@/app/lib/toast";
 import { Home, MessageCircle, BookOpen, Droplets, LogOut } from "lucide-react";
 
 type Tab = "dashboard" | "chat" | "quiz" | "wellness";
@@ -83,6 +84,7 @@ export default function DashboardShell({ profile, setProfile, signOut }: Props) 
   const isLoading = loadingTab === tab;
 
   return (
+  <ToastProvider>
     <div className="min-h-screen flex flex-col md:flex-row" style={{ background: "var(--chalk)" }}>
 
       {/* ── Sidebar — desktop only ─────────────────────────────────────────── */}
@@ -234,5 +236,6 @@ export default function DashboardShell({ profile, setProfile, signOut }: Props) 
         ))}
       </nav>
     </div>
+  </ToastProvider>
   );
 }

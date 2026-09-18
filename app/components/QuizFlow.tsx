@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import type { Profile, QuizQuestion } from "@/app/lib/types";
 import { generateQuiz, submitQuiz } from "@/app/lib/api";
 import { useCountUp, scoreColor, scoreTextColor, badgeInfo } from "@/app/lib/helpers";
+import { useToast } from "@/app/lib/toast";
 import { Check, X, ArrowRight, RotateCcw, Award, Sparkles, BookOpen } from "lucide-react";
 
 interface Props {
@@ -24,6 +25,7 @@ export default function QuizFlow({ profile, setProfile, prefill, onDone }: Props
   const [selectedSubject, setSelectedSubject] = useState(defaultSubject);
   const [selectedTopic, setSelectedTopic] = useState(defaultTopic);
   const [state, setState] = useState<QuizState>(prefill ? "loading" : "pick");
+  const { showError } = useToast();
 
   // Questions and progress
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
@@ -62,7 +64,8 @@ export default function QuizFlow({ profile, setProfile, prefill, onDone }: Props
       setQuestions(res.questions);
       setState("question");
     } catch (err) {
-      console.error(err);
+      const msg = err instanceof Error ? err.message : "Couldn't load questions. Check your connection.";
+      showError(msg);
       setState("pick");
     }
   }
@@ -102,7 +105,9 @@ export default function QuizFlow({ profile, setProfile, prefill, onDone }: Props
         setProfile(res.profile);
         setState("results");
       } catch (err) {
-        console.error("Submission failed", err);
+        const msg = err instanceof Error ? err.message : "Couldn't submit your answers. Please try again.";
+        showError(msg);
+        setState("question"); // drop back — don't lose the student's answers
       }
     }
   }

@@ -5,6 +5,7 @@ import type { Profile } from "@/app/lib/types";
 import type { ChatMessage } from "@/app/lib/types";
 import { sendChat } from "@/app/lib/api";
 import { weakTopics } from "@/app/lib/helpers";
+import { useToast } from "@/app/lib/toast";
 import { Send } from "lucide-react";
 
 interface Props {
@@ -61,6 +62,7 @@ function Bubble({ msg }: { msg: ChatMessage }) {
 
 export default function MentorChat({ profile }: Props) {
   const weak = weakTopics(profile.subjects);
+  const { showError } = useToast();
 
   // Starter prompts generated from actual weak topics
   const starterPrompts = [
@@ -100,12 +102,12 @@ export default function MentorChat({ profile }: Props) {
       const { reply } = await sendChat(trimmed, updated);
       setMessages([...updated, { role: "assistant", content: reply }]);
     } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Couldn't reach the mentor. Check your connection.";
+      showError(msg);
+      // Also inject a short in-chat fallback so the conversation doesn't freeze
       setMessages([
         ...updated,
-        {
-          role: "assistant",
-          content: err instanceof Error ? err.message : "Something went wrong. Please try again.",
-        },
+        { role: "assistant", content: "Sorry, I couldn't get a response right now. Please try again! 🙏" },
       ]);
     } finally {
       setIsTyping(false);

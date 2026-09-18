@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import type { Profile } from "@/app/lib/types";
 import { logWellness } from "@/app/lib/api";
-import { Droplets, Clock, Activity, Check, X, Sparkles, Smile } from "lucide-react";
+import { useToast } from "@/app/lib/toast";
+import { Droplets, Clock, Activity, Check, X, Sparkles } from "lucide-react";
 
 interface Props {
   profile: Profile;
@@ -15,12 +16,12 @@ export default function WellnessPanel({ profile, setProfile }: Props) {
   const [seconds, setSeconds] = useState(0);
   const [showNudge, setShowNudge] = useState(false);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
+  const { showError, showSuccess } = useToast();
 
   useEffect(() => {
     const interval = setInterval(() => {
       setSeconds((prev) => {
         const next = prev + 1;
-        // After 25 minutes (or 25 seconds for demo/testing convenience if desired; let's trigger a nudge after 1500s or allow early test)
         if (next === 1500) {
           setShowNudge(true);
         }
@@ -42,8 +43,14 @@ export default function WellnessPanel({ profile, setProfile }: Props) {
     try {
       const res = await logWellness(type);
       setProfile(res.profile);
+      const successMsg =
+        type === "hydration" ? `Glass logged! +${res.xpEarned} XP 💧` :
+        type === "break"     ? `Break taken! +${res.xpEarned} XP ☕` :
+                               `Activity done! +${res.xpEarned} XP ✅`;
+      showSuccess(successMsg);
     } catch (err) {
-      console.error(err);
+      const msg = err instanceof Error ? err.message : "Couldn't log activity. Check your connection.";
+      showError(msg);
     } finally {
       setLoadingAction(null);
     }
