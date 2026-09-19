@@ -1,21 +1,21 @@
-// Dark-canvas progress bar with optional glow.
-// Used everywhere a score appears as a bar.
-import { scoreColor, scoreGlow } from "@/app/lib/helpers";
+"use client";
 
-interface Props {
-  value: number;
-  glow?: boolean;
+interface ProgressBarProps {
+  value: number; // 0–100
+  className?: string;
+  animated?: boolean;
 }
 
-export default function ProgressBar({ value, glow = true }: Props) {
+export default function ProgressBar({ value, className = "", animated = false }: ProgressBarProps) {
+  const clipped = Math.min(100, Math.max(0, value));
+  const color =
+    clipped < 60 ? "bg-rose-500" : clipped < 80 ? "bg-amber-500" : "bg-emerald-500";
+
   return (
-    <div className="h-1.5 rounded-full overflow-visible" style={{ background: "rgba(255,255,255,0.07)" }}>
+    <div className={`h-2 rounded-full bg-slate-100 overflow-hidden ${className}`}>
       <div
-        className={`h-full rounded-full ${scoreColor(value)} transition-all duration-700`}
-        style={{
-          width: `${value}%`,
-          boxShadow: glow ? scoreGlow(value) : "none",
-        }}
+        className={`h-full rounded-full ${color} ${animated ? "transition-all duration-1000 ease-out" : ""}`}
+        style={{ width: `${clipped}%` }}
       />
     </div>
   );

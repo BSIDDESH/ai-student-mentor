@@ -12,25 +12,26 @@ interface Props {
   profile: Profile;
 }
 
+// Typing indicator — three bouncing dots with mascot avatar
 function TypingIndicator() {
   return (
-    <div className="flex items-end gap-2">
-      <div
-        className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-sm"
-        style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}
-      >
-        🤖
+    <div className="flex items-end gap-2 mb-3">
+      {/* Mentor mascot avatar */}
+      <div className="w-7 h-7 rounded-full overflow-hidden bg-indigo-100 border border-indigo-200 shrink-0">
+        <img
+          src="/mascot-wave.svg"
+          alt="AI Mentor"
+          className="w-full h-full object-contain"
+          draggable={false}
+        />
       </div>
-      <div
-        className="rounded-2xl rounded-bl-sm px-4 py-3"
-        style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-      >
-        <div className="flex items-center gap-1.5 px-1 py-1">
+      <div className="bg-white border border-slate-100 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
+        <div className="flex items-center gap-1">
           {[0, 1, 2].map((i) => (
             <span
               key={i}
-              className="w-1.5 h-1.5 rounded-full inline-block animate-bounce"
-              style={{ background: "#00d4ff", animationDelay: `${i * 0.15}s`, opacity: 0.7 }}
+              className="w-2 h-2 rounded-full bg-indigo-400 inline-block animate-bounce"
+              style={{ animationDelay: `${i * 0.15}s` }}
             />
           ))}
         </div>
@@ -39,35 +40,29 @@ function TypingIndicator() {
   );
 }
 
-function ChatBubble({ msg, profile }: { msg: ChatMessage; profile: Profile }) {
+// Single message bubble with mascot avatar for mentor
+function Bubble({ msg }: { msg: ChatMessage }) {
   const isUser = msg.role === "user";
   return (
-    <div className={`flex items-end gap-2 ${isUser ? "flex-row-reverse" : ""}`}>
+    <div className={`flex items-end gap-2 mb-3 ${isUser ? "flex-row-reverse" : ""}`}>
+      {/* Mascot avatar for mentor */}
       {!isUser && (
-        <div
-          className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-sm"
-          style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}
-        >
-          🤖
+        <div className="w-7 h-7 rounded-full overflow-hidden bg-indigo-100 border border-indigo-200 shrink-0">
+          <img
+            src="/mascot-wave.svg"
+            alt="AI Mentor"
+            className="w-full h-full object-contain"
+            draggable={false}
+          />
         </div>
       )}
+
       <div
-        className={`max-w-[78%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
-          isUser ? "rounded-br-sm" : "rounded-bl-sm"
-        }`}
-        style={
+        className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm whitespace-pre-wrap ${
           isUser
-            ? {
-                background: "rgba(0,212,255,0.10)",
-                border: "1px solid rgba(0,212,255,0.20)",
-                color: "var(--text-1)",
-              }
-            : {
-                background: "var(--surface)",
-                border: "1px solid var(--border)",
-                color: "var(--text-2)",
-              }
-        }
+            ? "bg-indigo-600 text-white rounded-br-sm"
+            : "bg-white border border-slate-100 text-slate-700 rounded-bl-sm"
+        }`}
       >
         {msg.content}
       </div>
@@ -79,6 +74,7 @@ export default function MentorChat({ profile }: Props) {
   const weak = weakTopics(profile.subjects);
   const { showError } = useToast();
 
+  // Starter prompts generated from actual weak topics
   const starterPrompts = [
     ...(weak.slice(0, 2).map((w) => `Help me with ${w.topic} 📚`)),
     "What should I study today? 🎯",
@@ -87,17 +83,17 @@ export default function MentorChat({ profile }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
-      content:
-        weak.length > 0
-          ? `Hi ${profile.name}! I can see ${weak[0].topic} is a focus area (${weak[0].score}%). Let's work on it — I'll keep it simple. 😊`
-          : `Hi ${profile.name}! All vectors look good — no weak topics. Want to push even higher? 💪`,
+      content: weak.length > 0
+        ? `Hi ${profile.name}! I can see ${weak[0].topic} is a weak spot for you (${weak[0].score}%). Want to work on it together? I'll make it simple. 😊`
+        : `Hi ${profile.name}! Great work — no weak topics right now. Want to push your scores even higher? 💪`,
     },
   ]);
-  const [input,    setInput]    = useState("");
+  const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
+  // Auto-scroll to bottom on new messages
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
@@ -105,122 +101,106 @@ export default function MentorChat({ profile }: Props) {
   async function send(text: string) {
     const trimmed = text.trim();
     if (!trimmed || isTyping) return;
+
     const userMsg: ChatMessage = { role: "user", content: trimmed };
     const updated = [...messages, userMsg];
     setMessages(updated);
     setInput("");
     setIsTyping(true);
+
     try {
       const { reply } = await sendChat(trimmed, updated);
       setMessages([...updated, { role: "assistant", content: reply }]);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Couldn't reach the mentor. Check your connection.";
       showError(msg);
-      setMessages([...updated, { role: "assistant", content: "Sorry — couldn't get a response right now. Try again! 🙏" }]);
+      // Also inject a short in-chat fallback so the conversation doesn't freeze
+      setMessages([
+        ...updated,
+        { role: "assistant", content: "Sorry, I couldn't get a response right now. Please try again! 🙏" },
+      ]);
     } finally {
       setIsTyping(false);
     }
   }
 
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      send(input);
+    }
+  }
+
   return (
-    <div
-      className="flex flex-col max-w-2xl mx-auto"
-      style={{ height: "calc(100dvh - 5rem)" }}
-    >
-      {/* ── Header ── */}
-      <div
-        className="px-5 py-3 flex items-center gap-3 shrink-0"
-        style={{
-          background: "var(--surface-2)",
-          borderBottom: "1px solid var(--border)",
-        }}
-      >
-        <div
-          className="w-9 h-9 rounded-full flex items-center justify-center text-base"
-          style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-        >
-          🤖
+    <div className="flex flex-col h-[calc(100vh-5rem)] md:h-[calc(100vh-1.5rem)] max-w-2xl mx-auto">
+      {/* Header with mascot avatar */}
+      <div className="px-4 py-3 border-b border-slate-100 bg-white flex items-center gap-3">
+        <div className="w-9 h-9 rounded-full overflow-hidden bg-indigo-100 border border-indigo-200 shrink-0">
+          <img
+            src="/mascot-wave.svg"
+            alt="AI Mentor"
+            className="w-full h-full object-contain"
+            draggable={false}
+          />
         </div>
         <div>
-          <p className="font-display text-sm font-semibold" style={{ color: "var(--text-1)" }}>
-            AI Mentor
-          </p>
-          <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: "#00d4aa" }} />
-            <p className="label-tele" style={{ color: "#00d4aa" }}>ONLINE · CONTEXTUAL</p>
-          </div>
+          <p className="font-semibold text-slate-800 text-sm">AI Mentor</p>
+          <p className="text-xs text-emerald-500 font-medium">● Online</p>
         </div>
       </div>
 
-      {/* ── Messages ── */}
-      <div
-        className="flex-1 overflow-y-auto px-4 py-4 space-y-4"
-        style={{ background: "var(--canvas)" }}
-      >
+      {/* Messages area */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1 bg-slate-50">
         {messages.map((msg, i) => (
-          <ChatBubble key={i} msg={msg} profile={profile} />
+          <Bubble key={i} msg={msg} />
         ))}
         {isTyping && <TypingIndicator />}
         <div ref={bottomRef} />
       </div>
 
-      {/* ── Starter prompts ── */}
-      {messages.length === 1 && (
-        <div
-          className="px-4 py-3 flex gap-2 overflow-x-auto shrink-0"
-          style={{ borderTop: "1px solid var(--border)", background: "var(--surface)" }}
-        >
-          {starterPrompts.map((p) => (
-            <button
-              key={p}
-              onClick={() => send(p)}
-              className="whitespace-nowrap text-sm px-3 py-2 rounded-lg shrink-0"
-              style={{
-                background: "var(--surface-2)",
-                border: "1px solid var(--border)",
-                color: "var(--text-2)",
-              }}
-            >
-              {p}
-            </button>
-          ))}
+      {/* Starter prompts — shown only when no conversation yet (just the greeting) */}
+      {messages.length === 1 && !isTyping && (
+        <div className="px-4 py-2 bg-slate-50 border-t border-slate-100">
+          <p className="text-xs text-slate-400 mb-2">Suggested</p>
+          <div className="flex flex-wrap gap-2">
+            {starterPrompts.map((prompt) => (
+              <button
+                key={prompt}
+                onClick={() => send(prompt)}
+                className="text-xs bg-white border border-indigo-200 text-indigo-600 rounded-full px-3 py-1.5 hover:bg-indigo-50 transition-colors font-medium"
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* ── Input ── */}
-      <div
-        className="px-4 py-3 shrink-0"
-        style={{ background: "var(--surface)", borderTop: "1px solid var(--border)" }}
-      >
-        <div
-          className="flex items-center gap-2 rounded-xl px-4 py-2"
-          style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}
-        >
+      {/* Input area */}
+      <div className="px-4 py-3 bg-white border-t border-slate-100">
+        <div className="flex items-end gap-2 bg-slate-50 rounded-2xl border border-slate-200 px-3 py-2 focus-within:border-indigo-300 focus-within:ring-2 focus-within:ring-indigo-100 transition-all">
           <textarea
-            ref={textareaRef}
+            ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input); }
-            }}
+            onKeyDown={handleKeyDown}
             placeholder="Ask your mentor anything…"
             rows={1}
-            className="flex-1 bg-transparent text-sm resize-none outline-none leading-relaxed"
-            style={{ color: "var(--text-1)", caretColor: "#00d4ff" }}
+            disabled={isTyping}
+            className="flex-1 bg-transparent text-sm text-slate-700 placeholder-slate-400 outline-none resize-none max-h-28 py-1 disabled:opacity-50"
+            style={{ fieldSizing: "content" } as React.CSSProperties}
           />
           <button
             onClick={() => send(input)}
             disabled={!input.trim() || isTyping}
-            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 disabled:opacity-30"
-            style={{
-              background: "rgba(0,212,255,0.10)",
-              border: "1px solid rgba(0,212,255,0.20)",
-              color: "#00d4ff",
-            }}
+            className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center shrink-0 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-indigo-700 transition-colors"
           >
-            <Send size={14} />
+            <Send size={14} className="text-white" />
           </button>
         </div>
+        <p className="text-xs text-slate-400 mt-1.5 text-center">
+          Enter to send · Shift+Enter for new line
+        </p>
       </div>
     </div>
   );

@@ -20,77 +20,72 @@ export default function BadgeShelf({ earned }: Props) {
 
   return (
     <div
-      className="rounded-xl overflow-hidden"
-      style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+      className="bg-white rounded-2xl border border-stone-100 p-6"
+      style={{ boxShadow: "0 1px 6px 0 rgba(28,25,23,0.06)" }}
     >
-      {/* Header */}
-      <div
-        className="px-5 py-3 flex items-center justify-between"
-        style={{ background: "var(--surface-2)", borderBottom: "1px solid var(--border)" }}
-      >
-        <span className="label-tele" style={{ color: "var(--text-3)" }}>ACHIEVEMENT REGISTRY</span>
-        <span className="font-mono-data text-sm" style={{ color: "var(--text-2)" }}>
-          <span style={{ color: "var(--gold)" }}>{earned.length}</span>/{ALL_BADGES.length}
-        </span>
+      <div className="flex items-center justify-between mb-6">
+        <p className="font-display text-base font-bold text-stone-800">Achievements</p>
+        <p className="text-sm text-stone-400">
+          <span className="font-display font-bold text-stone-700">{earned.length}</span>
+          /{ALL_BADGES.length} earned
+        </p>
       </div>
 
-      <div className="p-4">
-        <div className="grid grid-cols-3 gap-3">
-          {ALL_BADGES.map((id) => {
-            const isEarned = earnedSet.has(id);
-            const { label, emoji } = badgeInfo(id);
+      <div className="grid grid-cols-3 gap-4">
+        {ALL_BADGES.map((id) => {
+          const isEarned = earnedSet.has(id);
+          const { label, emoji } = badgeInfo(id);
 
-            return isEarned ? (
-              /*
-               * EARNED — gold border + warm glow, emoji at full brightness.
-               * Defined in globals.css as .badge-earned.
-               * Looks like a physical medallion against the dark canvas.
-               */
-              <div
-                key={id}
-                className="badge-earned flex flex-col items-center rounded-xl px-3 py-5 text-center"
-              >
-                <span className="text-4xl leading-none">{emoji}</span>
-                <p
-                  className="text-sm font-semibold mt-3 leading-tight"
-                  style={{ color: "var(--gold)" }}
+          return isEarned ? (
+            /*
+             * EARNED — feels like a physical badge:
+             * Indigo-to-violet gradient, colored ring, no transparency.
+             * The emoji is the full 40px — this is the reward, own it.
+             */
+            <div
+              key={id}
+              className="badge-earned flex flex-col items-center rounded-2xl px-4 py-5 text-center"
+            >
+              <span className="text-4xl leading-none">{emoji}</span>
+              <p className="font-display text-sm font-bold text-indigo-700 mt-3 leading-tight">
+                {label}
+              </p>
+              <span className="text-sm text-indigo-400 mt-1 font-medium">Earned ✓</span>
+            </div>
+          ) : (
+            /*
+             * LOCKED — different in three ways from earned, not just greyscale:
+             * 1. Dashed border (sketch/blueprint feel — "possible but not yet real")
+             * 2. Muted background (var(--mist))
+             * 3. Lock icon overlaid on emoji — the emoji is still visible at lower opacity,
+             *    which hints at what you'll get, making it feel worth unlocking
+             */
+            <div
+              key={id}
+              className="badge-locked flex flex-col items-center rounded-2xl px-4 py-5 text-center"
+            >
+              <div className="relative">
+                <span className="text-4xl leading-none opacity-25 grayscale">{emoji}</span>
+                <span
+                  className="absolute -bottom-1 -right-1 text-base leading-none"
+                  role="img"
+                  aria-label="locked"
                 >
-                  {label}
-                </p>
-                <span className="label-tele mt-1" style={{ color: "var(--gold)" }}>
-                  ◉ ACQUIRED
+                  🔒
                 </span>
               </div>
-            ) : (
-              /*
-               * LOCKED — dashed border, emoji barely visible.
-               * Shows what's possible without cluttering the earned ones.
-               */
-              <div
-                key={id}
-                className="badge-locked flex flex-col items-center rounded-xl px-3 py-5 text-center"
-              >
-                <span className="text-4xl leading-none opacity-15 grayscale">{emoji}</span>
-                <p
-                  className="text-sm font-medium mt-3 leading-tight"
-                  style={{ color: "var(--text-3)" }}
-                >
-                  {label}
-                </p>
-                <span className="label-tele mt-1" style={{ color: "var(--text-3)" }}>
-                  LOCKED
-                </span>
-              </div>
-            );
-          })}
-        </div>
-
-        {earned.length === 0 && (
-          <p className="text-sm text-center mt-4 pb-2" style={{ color: "var(--text-3)" }}>
-            Complete your first quiz to begin acquiring achievements.
-          </p>
-        )}
+              <p className="text-sm font-medium text-stone-400 mt-3 leading-tight">{label}</p>
+              <span className="text-sm text-stone-400 mt-1">Locked</span>
+            </div>
+          );
+        })}
       </div>
+
+      {earned.length === 0 && (
+        <p className="text-sm text-stone-400 text-center mt-4">
+          Complete your first quiz to earn your first badge.
+        </p>
+      )}
     </div>
   );
 }

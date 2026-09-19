@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import type { Profile, QuizQuestion } from "@/app/lib/types";
 import { generateQuiz, submitQuiz } from "@/app/lib/api";
-import { useCountUp, scoreHex, scoreGlow, badgeInfo } from "@/app/lib/helpers";
+import { useCountUp, scoreColor, scoreTextColor, badgeInfo } from "@/app/lib/helpers";
 import { useToast } from "@/app/lib/toast";
-import { Check, X, ArrowRight, RotateCcw, BookOpen } from "lucide-react";
+import { Check, X, ArrowRight, RotateCcw, Award, Sparkles, BookOpen } from "lucide-react";
 
 interface Props {
   profile: Profile;
@@ -17,25 +17,32 @@ interface Props {
 type QuizState = "pick" | "loading" | "question" | "results";
 
 export default function QuizFlow({ profile, setProfile, prefill, onDone }: Props) {
-  const subjectsList   = Object.keys(profile.subjects);
+  const subjectsList = Object.keys(profile.subjects);
   const defaultSubject = prefill?.subject || subjectsList[0] || "Mathematics";
-  const defaultTopics  = Object.keys(profile.subjects[defaultSubject] || {});
-  const defaultTopic   = prefill?.topic || defaultTopics[0] || "Fractions";
+  const defaultTopics = Object.keys(profile.subjects[defaultSubject] || {});
+  const defaultTopic = prefill?.topic || defaultTopics[0] || "Fractions";
 
   const [selectedSubject, setSelectedSubject] = useState(defaultSubject);
-  const [selectedTopic,   setSelectedTopic]   = useState(defaultTopic);
+  const [selectedTopic, setSelectedTopic] = useState(defaultTopic);
   const [state, setState] = useState<QuizState>(prefill ? "loading" : "pick");
   const { showError } = useToast();
 
-  const [questions,        setQuestions]        = useState<QuizQuestion[]>([]);
-  const [currentIndex,     setCurrentIndex]     = useState(0);
-  const [selectedOption,   setSelectedOption]   = useState<number | null>(null);
+  // Questions and progress
+  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isAnswerRevealed, setIsAnswerRevealed] = useState(false);
-  const [correctCount,     setCorrectCount]     = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
+
+  // Result animation states
   const [resultData, setResultData] = useState<{
-    oldScore: number; newScore: number; xpEarned: number; newBadges: string[];
+    oldScore: number;
+    newScore: number;
+    xpEarned: number;
+    newBadges: string[];
   } | null>(null);
 
+  // Automatically fetch questions if prefilled
   useEffect(() => {
     if (prefill) {
       setSelectedSubject(prefill.subject);
@@ -51,74 +58,77 @@ export default function QuizFlow({ profile, setProfile, prefill, onDone }: Props
     setIsAnswerRevealed(false);
     setCorrectCount(0);
     setResultData(null);
+
     try {
       const res = await generateQuiz(subject, topic);
       setQuestions(res.questions);
       setState("question");
     } catch (err) {
-      showError(err instanceof Error ? err.message : "Couldn't load questions. Check connection.");
+      const msg = err instanceof Error ? err.message : "Couldn't load questions. Check your connection.";
+      showError(msg);
       setState("pick");
     }
   }
 
-  function handleOptionSelect(idx: number) {
+  function handleOptionSelect(optionIdx: number) {
     if (isAnswerRevealed) return;
-    setSelectedOption(idx);
+
+    setSelectedOption(optionIdx);
     setIsAnswerRevealed(true);
-    if (idx === questions[currentIndex].answerIndex) {
-      setCorrectCount((p) => p + 1);
+
+    const isCorrect = optionIdx === questions[currentIndex].answerIndex;
+    if (isCorrect) {
+      setCorrectCount((prev) => prev + 1);
     }
   }
 
   async function handleNext() {
     if (currentIndex + 1 < questions.length) {
-      setCurrentIndex((p) => p + 1);
+      setCurrentIndex((prev) => prev + 1);
       setSelectedOption(null);
       setIsAnswerRevealed(false);
     } else {
+      // Quiz finished — correctCount already includes this question's result
       const finalCorrect = correctCount;
+
       setState("loading");
       try {
         const res = await submitQuiz(selectedSubject, selectedTopic, finalCorrect, questions.length);
         setResultData({
-          oldScore: res.oldScore, newScore: res.newScore,
-          xpEarned: res.xpEarned, newBadges: res.newBadges || [],
+          oldScore: res.oldScore,
+          newScore: res.newScore,
+          xpEarned: res.xpEarned,
+          newBadges: res.newBadges || [],
         });
+        // Immediately update global profile state so goals/XP/badges sync
         setProfile(res.profile);
         setState("results");
       } catch (err) {
-        showError(err instanceof Error ? err.message : "Couldn't submit answers. Please retry.");
-        setState("question");
+        const msg = err instanceof Error ? err.message : "Couldn't submit your answers. Please try again.";
+        showError(msg);
+        setState("question"); // drop back — don't lose the student's answers
       }
     }
   }
 
-  // ─── PICK ────────────────────────────────────────────────────────────────────
-  if (state === "pick") {
-    return (
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        <div
-          className="rounded-xl overflow-hidden"
-          style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-        >
-          <div
-            className="px-6 py-4 flex items-center gap-3"
-            style={{ background: "var(--surface-2)", borderBottom: "1px solid var(--border)" }}
-          >
-            <BookOpen size={18} style={{ color: "#00d4ff" }} />
+  return (
+    <div className="max-w-2xl mx-auto px-4 py-6">
+      {/* ── STATE 1: PICK TOPIC ────────────────────────────────────── */}
+      {state === "pick" && (
+        <div className="bg-white rounded-2xl border border-stone-100 p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
+              <BookOpen size={22} />
+            </div>
             <div>
-              <p className="font-display text-base font-semibold" style={{ color: "var(--text-1)" }}>
-                Select Practice Vector
-              </p>
-              <p className="label-tele mt-0.5" style={{ color: "var(--text-3)" }}>
-                CONFIGURE · DEPLOY · REVIEW
-              </p>
+              <h2 className="font-display text-xl font-bold text-stone-800">Choose Practice Quiz</h2>
+              <p className="text-sm text-stone-500">Pick a subject and topic to test your skills</p>
             </div>
           </div>
 
-          <div className="p-6 space-y-5">
+          <div className="space-y-4 mb-6">
             <div>
-              <label className="label-tele block mb-2" style={{ color: "var(--text-3)" }}>SUBJECT</label>
+              <label className="block text-sm font-semibold text-stone-700 mb-1.5">Subject</label>
               <select
                 value={selectedSubject}
                 onChange={(e) => {
@@ -127,419 +137,320 @@ export default function QuizFlow({ profile, setProfile, prefill, onDone }: Props
                   const topics = Object.keys(profile.subjects[s] || {});
                   setSelectedTopic(topics[0] || "");
                 }}
-                className="w-full px-4 py-3 rounded-lg text-sm font-medium outline-none"
-                style={{
-                  background: "var(--surface-2)", color: "var(--text-1)",
-                  border: "1px solid var(--border)",
-                }}
+                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm font-medium text-stone-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
               >
-                {subjectsList.map((s) => <option key={s} value={s}>{s}</option>)}
+                {subjectsList.map((subj) => (
+                  <option key={subj} value={subj}>
+                    {subj}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div>
-              <label className="label-tele block mb-2" style={{ color: "var(--text-3)" }}>TOPIC</label>
+              <label className="block text-sm font-semibold text-stone-700 mb-1.5">Topic</label>
               <select
                 value={selectedTopic}
                 onChange={(e) => setSelectedTopic(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg text-sm font-medium outline-none"
-                style={{
-                  background: "var(--surface-2)", color: "var(--text-1)",
-                  border: "1px solid var(--border)",
-                }}
+                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm font-medium text-stone-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
               >
                 {Object.keys(profile.subjects[selectedSubject] || {}).map((t) => {
-                  const s = profile.subjects[selectedSubject][t]?.score;
-                  return <option key={t} value={t}>{t}{s !== undefined ? ` · ${s}%` : ""}</option>;
+                  const score = profile.subjects[selectedSubject][t]?.score;
+                  return (
+                    <option key={t} value={t}>
+                      {t} {score !== undefined ? `(${score}%)` : ""}
+                    </option>
+                  );
                 })}
               </select>
             </div>
+          </div>
 
-            <button
-              onClick={() => startQuiz(selectedSubject, selectedTopic)}
-              className="w-full py-3.5 rounded-lg font-display text-sm font-bold tracking-wide"
-              style={{
-                background: "rgba(0,212,255,0.10)",
-                border: "1px solid rgba(0,212,255,0.30)",
-                color: "#00d4ff",
-                boxShadow: "0 0 16px 0 rgba(0,212,255,0.10)",
-              }}
-            >
-              INITIATE QUIZ →
-            </button>
+          <button
+            onClick={() => startQuiz(selectedSubject, selectedTopic)}
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-display text-base font-semibold py-3.5 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
+          >
+            Start Quiz →
+          </button>
+        </div>
+      )}
+
+      {/* ── STATE 2: LOADING SKELETON (MASCOT INTEGRATION) ─────────── */}
+      {state === "loading" && (
+        <div className="bg-white rounded-2xl border border-stone-100 p-8 shadow-sm text-center">
+          {/* Mascot idle — thinking/studying pose */}
+          <div className="w-36 h-36 mx-auto mb-4">
+            <img
+              src="/mascot-idle.svg"
+              alt="AI Mentor writing questions…"
+              className="w-full h-full object-contain"
+              draggable={false}
+            />
+          </div>
+          <h3 className="font-display text-xl font-bold text-stone-800 mb-2">
+            Writing 5 questions just for you…
+          </h3>
+          <p className="text-sm text-stone-500 max-w-sm mx-auto mb-6">
+            Adapting difficulty to Class {profile.klass} and tailoring to your previous attempts on {selectedTopic}.
+          </p>
+
+          <div className="space-y-3 max-w-md mx-auto">
+            <div className="h-3 bg-stone-100 rounded-full animate-pulse w-3/4 mx-auto" />
+            <div className="h-3 bg-stone-100 rounded-full animate-pulse w-1/2 mx-auto" />
           </div>
         </div>
-      </div>
-    );
-  }
+      )}
 
-  // ─── LOADING ─────────────────────────────────────────────────────────────────
-  if (state === "loading") {
-    return (
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        <div
-          className="rounded-xl p-8 text-center"
-          style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-        >
-          <div
-            className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center animate-pulse"
-            style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.15)" }}
-          >
-            <span className="text-2xl">⬡</span>
-          </div>
-          <p className="font-display text-xl font-bold mb-2" style={{ color: "var(--text-1)" }}>
-            Generating 5 questions…
-          </p>
-          <p className="text-sm" style={{ color: "var(--text-2)" }}>
-            Calibrating to Class {profile.klass} · {selectedTopic}
-          </p>
-          <div className="mt-6 space-y-2 max-w-xs mx-auto">
-            <div className="h-1.5 rounded-full animate-pulse" style={{ background: "var(--border)" }} />
-            <div className="h-1.5 rounded-full animate-pulse w-3/4 mx-auto" style={{ background: "var(--border)" }} />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ─── QUESTIONS ───────────────────────────────────────────────────────────────
-  if (state === "question" && questions[currentIndex]) {
-    const q = questions[currentIndex];
-    return (
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        <div
-          className="rounded-xl overflow-hidden"
-          style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-        >
-          {/* Progress header */}
-          <div
-            className="px-5 py-3 flex items-center justify-between"
-            style={{ background: "var(--surface-2)", borderBottom: "1px solid var(--border)" }}
-          >
-            <div className="flex items-center gap-2">
-              <span
-                className="label-tele px-2 py-1 rounded"
-                style={{
-                  color: "#00d4ff",
-                  border: "1px solid rgba(0,212,255,0.20)",
-                  background: "rgba(0,212,255,0.06)",
-                }}
-              >
+      {/* ── STATE 3: QUESTIONS (1 AT A TIME) ──────────────────────── */}
+      {state === "question" && questions[currentIndex] && (
+        <div className="bg-white rounded-2xl border border-stone-100 p-6 shadow-sm">
+          {/* Progress dots & Topic indicator */}
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-stone-100">
+            <div>
+              <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full uppercase tracking-wider">
                 {selectedTopic}
               </span>
-              <span className="label-tele" style={{ color: "var(--text-3)" }}>
-                Q{currentIndex + 1}/{questions.length}
-              </span>
+              <p className="font-display text-sm font-bold text-stone-700 mt-1.5">
+                Question {currentIndex + 1} of {questions.length}
+              </p>
             </div>
-            {/* Progress dots */}
+
+            {/* Dots */}
             <div className="flex items-center gap-1.5">
               {questions.map((_, i) => (
-                <span
+                <div
                   key={i}
-                  className="w-2 h-2 rounded-full inline-block"
-                  style={{
-                    background:
-                      i === currentIndex ? "#00d4ff"
-                      : i < currentIndex  ? "#00d4aa"
-                      : "rgba(255,255,255,0.12)",
-                    boxShadow: i === currentIndex ? "0 0 6px #00d4ff" : "none",
-                  }}
+                  className={`w-3 h-3 rounded-full transition-all ${
+                    i === currentIndex
+                      ? "bg-indigo-600 scale-110"
+                      : i < currentIndex
+                      ? "bg-emerald-500"
+                      : "bg-stone-200"
+                  }`}
                 />
               ))}
             </div>
           </div>
 
-          <div className="p-6">
-            {/* Question */}
-            <h3 className="font-display text-lg font-semibold leading-snug mb-6" style={{ color: "var(--text-1)" }}>
-              {q.question}
-            </h3>
+          {/* Question Text */}
+          <h3 className="font-display text-lg font-bold text-stone-900 mb-6 leading-relaxed">
+            {questions[currentIndex].question}
+          </h3>
 
-            {/* Options */}
-            <div className="space-y-2.5 mb-5">
-              {q.options.map((opt, idx) => {
-                const isSelected = selectedOption === idx;
-                const isCorrect  = idx === q.answerIndex;
-                let borderColor  = "var(--border)";
-                let bg           = "var(--surface-2)";
-                let textColor    = "var(--text-2)";
-                let icon         = null;
+          {/* 4 Options */}
+          <div className="space-y-3 mb-6">
+            {questions[currentIndex].options.map((opt, idx) => {
+              const isSelected = selectedOption === idx;
+              const isCorrectAnswer = idx === questions[currentIndex].answerIndex;
 
-                if (isAnswerRevealed) {
-                  if (isCorrect) {
-                    borderColor = "rgba(0,212,170,0.40)"; bg = "rgba(0,212,170,0.06)"; textColor = "#00d4aa";
-                    icon = <Check size={16} style={{ color: "#00d4aa" }} />;
-                  } else if (isSelected) {
-                    borderColor = "rgba(255,107,107,0.40)"; bg = "rgba(255,107,107,0.06)"; textColor = "#ff6b6b";
-                    icon = <X size={16} style={{ color: "#ff6b6b" }} />;
-                  } else {
-                    textColor = "var(--text-3)";
-                  }
+              let btnStyle = "bg-stone-50 border-stone-200 text-stone-800 hover:border-indigo-300";
+              let badgeStyle = "bg-white text-stone-500 border-stone-200";
+
+              if (isAnswerRevealed) {
+                if (isCorrectAnswer) {
+                  btnStyle = "bg-emerald-50 border-emerald-300 text-emerald-900 font-semibold";
+                  badgeStyle = "bg-emerald-500 text-white border-emerald-500";
+                } else if (isSelected) {
+                  btnStyle = "bg-rose-50 border-rose-300 text-rose-900 font-semibold";
+                  badgeStyle = "bg-rose-500 text-white border-rose-500";
+                } else {
+                  btnStyle = "bg-stone-50 border-stone-100 text-stone-400 opacity-60";
                 }
+              }
 
-                return (
-                  <button
-                    key={idx}
-                    disabled={isAnswerRevealed}
-                    onClick={() => handleOptionSelect(idx)}
-                    className="w-full flex items-center justify-between px-4 py-3.5 rounded-lg text-left text-sm"
-                    style={{ background: bg, border: `1px solid ${borderColor}`, color: textColor, transition: "all 0.2s" }}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span
-                        className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold font-mono-data shrink-0"
-                        style={{
-                          background: isAnswerRevealed && isCorrect ? "rgba(0,212,170,0.15)" : "rgba(255,255,255,0.06)",
-                          border: `1px solid ${borderColor}`,
-                          color: textColor,
-                        }}
-                      >
-                        {String.fromCharCode(65 + idx)}
-                      </span>
-                      <span>{opt}</span>
-                    </div>
-                    {icon && <span className="shrink-0">{icon}</span>}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Explanation banner */}
-            {isAnswerRevealed && (
-              <div
-                className="mb-5 rounded-lg px-4 py-3 text-sm"
-                style={{
-                  background: "var(--surface-2)",
-                  border: "1px solid var(--border)",
-                  color: "var(--text-2)",
-                }}
-              >
-                <span className="font-semibold" style={{ color: "var(--text-1)" }}>
-                  {selectedOption === q.answerIndex ? "◉ Correct — " : "▲ Incorrect — "}
-                </span>
-                {q.explanation}
-              </div>
-            )}
-
-            {isAnswerRevealed && (
-              <button
-                onClick={handleNext}
-                className="w-full py-3.5 rounded-lg font-display text-sm font-bold flex items-center justify-center gap-2"
-                style={{
-                  background: "rgba(0,212,255,0.10)",
-                  border: "1px solid rgba(0,212,255,0.25)",
-                  color: "#00d4ff",
-                }}
-              >
-                {currentIndex + 1 < questions.length ? "NEXT CHECKPOINT" : "ANALYSE RESULTS"}
-                <ArrowRight size={16} />
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ─── RESULTS — THE MONEY SHOT ─────────────────────────────────────────────────
-  if (state === "results" && resultData) {
-    return (
-      <ResultsView
-        subject={selectedSubject}
-        topic={selectedTopic}
-        correct={correctCount}
-        total={questions.length}
-        resultData={resultData}
-        onRestart={() => startQuiz(selectedSubject, selectedTopic)}
-        onDone={onDone}
-      />
-    );
-  }
-
-  return null;
-}
-
-// ── Results sub-component (isolated for clean hook usage) ─────────────────────
-function ResultsView({
-  subject, topic, correct, total, resultData, onRestart, onDone,
-}: {
-  subject: string; topic: string; correct: number; total: number;
-  resultData: { oldScore: number; newScore: number; xpEarned: number; newBadges: string[] };
-  onRestart: () => void; onDone?: () => void;
-}) {
-  const animatedScore  = useCountUp(resultData.oldScore, resultData.newScore, 1200);
-  const crossedThreshold = resultData.oldScore < 60 && resultData.newScore >= 60;
-
-  // The glow and bar color sweep live alongside the count-up animation
-  const barColor = scoreHex(animatedScore);
-  const barGlow  = scoreGlow(animatedScore);
-
-  return (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
-      {/* ── Main results card ── */}
-      <div
-        className="rounded-xl overflow-hidden"
-        style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-      >
-        {/* Status header */}
-        <div
-          className="px-6 py-3 flex items-center justify-between"
-          style={{ background: "var(--surface-2)", borderBottom: "1px solid var(--border)" }}
-        >
-          <span className="label-tele" style={{ color: "var(--text-3)" }}>
-            TRAJECTORY ANALYSIS COMPLETE
-          </span>
-          <span className="label-tele" style={{ color: "#00d4aa" }}>
-            {correct}/{total} CHECKPOINTS CLEARED
-          </span>
-        </div>
-
-        <div className="px-6 py-6">
-          {/* ── Score row — THE VISUAL CENTREPIECE ── */}
-          <div className="flex items-end justify-center gap-8 mb-6">
-            <div className="text-center">
-              <p className="label-tele mb-2" style={{ color: "var(--text-3)" }}>BEFORE</p>
-              <p
-                className="font-mono-data font-bold"
-                style={{ fontSize: "3rem", color: scoreHex(resultData.oldScore), opacity: 0.5 }}
-              >
-                {resultData.oldScore}%
-              </p>
-            </div>
-
-            <span className="text-2xl pb-3" style={{ color: "var(--text-3)" }}>→</span>
-
-            <div className="text-center">
-              <p className="label-tele mb-2" style={{ color: "var(--text-3)" }}>AFTER</p>
-              {/* The count-up number — changes color as it crosses bands */}
-              <p
-                className="font-mono-data font-bold"
-                style={{
-                  fontSize: "4rem",
-                  color: barColor,
-                  textShadow: `0 0 20px ${barColor}60`,
-                  transition: "color 0.1s, text-shadow 0.1s",
-                }}
-              >
-                {animatedScore}%
-              </p>
-            </div>
-          </div>
-
-          {/* ── Glowing progress bar — the sweeping colour animation ── */}
-          <div
-            className="h-2 rounded-full mb-3"
-            style={{ background: "rgba(255,255,255,0.06)" }}
-          >
-            <div
-              className="h-full rounded-full"
-              style={{
-                width: `${animatedScore}%`,
-                background: barColor,
-                boxShadow: barGlow,
-                transition: "width 0s, background 0.1s, box-shadow 0.1s",
-              }}
-            />
-          </div>
-
-          {/* Threshold marker at 60% */}
-          <div className="relative h-4 mb-6">
-            <div
-              className="absolute top-0 h-full w-px"
-              style={{ left: "60%", background: "rgba(255,255,255,0.20)" }}
-            />
-            <span
-              className="label-tele absolute top-0"
-              style={{ left: "calc(60% + 4px)", color: "rgba(255,255,255,0.25)" }}
-            >
-              60%
-            </span>
-          </div>
-
-          {/* Threshold cleared message — appears when > 60 */}
-          {crossedThreshold && (
-            <div
-              className="rounded-lg px-5 py-3 mb-5 flex items-center gap-3"
-              style={{
-                background: "rgba(0,212,170,0.07)",
-                border: "1px solid rgba(0,212,170,0.25)",
-                boxShadow: "0 0 24px 0 rgba(0,212,170,0.08)",
-              }}
-            >
-              <span className="text-xl">◉</span>
-              <div>
-                <p className="font-display text-sm font-bold" style={{ color: "#00d4aa" }}>
-                  THRESHOLD CLEARED — COURSE DEVIATION RESOLVED
-                </p>
-                <p className="label-tele mt-1" style={{ color: "var(--text-2)" }}>
-                  {topic} is no longer a weak vector
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* XP + badges */}
-          <div
-            className="flex items-center gap-4 pt-4 pb-2"
-            style={{ borderTop: "1px solid var(--border)" }}
-          >
-            <div
-              className="flex items-center gap-2 rounded-lg px-4 py-2.5"
-              style={{
-                background: "rgba(201,168,76,0.08)",
-                border: "1px solid rgba(201,168,76,0.25)",
-              }}
-            >
-              <span className="font-mono-data font-bold text-base" style={{ color: "var(--gold)" }}>
-                + {resultData.xpEarned} XP
-              </span>
-              <span className="label-tele" style={{ color: "var(--gold)" }}>ACQUIRED</span>
-            </div>
-
-            {resultData.newBadges.length > 0 && resultData.newBadges.map((b) => {
-              const info = badgeInfo(b);
               return (
-                <div
-                  key={b}
-                  className="flex items-center gap-2 rounded-lg px-3 py-2.5"
-                  style={{
-                    background: "rgba(201,168,76,0.08)",
-                    border: "1px solid rgba(201,168,76,0.25)",
-                  }}
+                <button
+                  key={idx}
+                  disabled={isAnswerRevealed}
+                  onClick={() => handleOptionSelect(idx)}
+                  className={`w-full flex items-center justify-between p-4 rounded-xl border-2 text-left transition-all text-sm ${btnStyle}`}
                 >
-                  <span className="text-xl">{info.emoji}</span>
-                  <span className="text-sm font-semibold" style={{ color: "var(--gold)" }}>{info.label}</span>
-                </div>
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`w-7 h-7 rounded-lg border flex items-center justify-center font-display text-xs font-bold shrink-0 ${badgeStyle}`}
+                    >
+                      {String.fromCharCode(65 + idx)}
+                    </span>
+                    <span>{opt}</span>
+                  </div>
+
+                  {isAnswerRevealed && isCorrectAnswer && (
+                    <Check size={18} className="text-emerald-600 shrink-0" />
+                  )}
+                  {isAnswerRevealed && isSelected && !isCorrectAnswer && (
+                    <X size={18} className="text-rose-600 shrink-0" />
+                  )}
+                </button>
               );
             })}
           </div>
-        </div>
-      </div>
 
-      {/* Action buttons */}
-      <div className="flex gap-3">
-        <button
-          onClick={onRestart}
-          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-display font-semibold"
-          style={{
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-            color: "var(--text-2)",
-          }}
-        >
-          <RotateCcw size={15} /> RETAKE
-        </button>
-        <button
-          onClick={onDone}
-          className="flex-1 py-3 rounded-lg text-sm font-display font-bold"
-          style={{
-            background: "rgba(0,212,255,0.10)",
-            border: "1px solid rgba(0,212,255,0.25)",
-            color: "#00d4ff",
-          }}
-        >
-          RETURN TO NAV →
-        </button>
+          {/* Instant feedback explanation banner */}
+          {isAnswerRevealed && (
+            <div className="mb-6 p-4 rounded-xl bg-stone-50 border border-stone-200 text-sm">
+              <p className="font-semibold text-stone-800 mb-1">
+                {selectedOption === questions[currentIndex].answerIndex ? "🎉 Correct!" : "💡 Not quite"}
+              </p>
+              <p className="text-stone-600 leading-relaxed">
+                {questions[currentIndex].explanation}
+              </p>
+            </div>
+          )}
+
+          {/* Next / Submit Button */}
+          {isAnswerRevealed && (
+            <button
+              onClick={handleNext}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-display text-base font-semibold py-3.5 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
+            >
+              {currentIndex + 1 < questions.length ? "Next Question" : "See Final Results"}
+              <ArrowRight size={18} />
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* ── STATE 4: RESULTS (THE 45% -> 68% MONEY SHOT) ─────────── */}
+      {state === "results" && resultData && (
+        <ResultsView
+          subject={selectedSubject}
+          topic={selectedTopic}
+          correct={correctCount}
+          total={questions.length}
+          resultData={resultData}
+          onRestart={() => startQuiz(selectedSubject, selectedTopic)}
+          onDone={onDone}
+        />
+      )}
+    </div>
+  );
+}
+
+// Separate Subcomponent for Results to isolate count-up hooks cleanly
+function ResultsView({
+  subject,
+  topic,
+  correct,
+  total,
+  resultData,
+  onRestart,
+  onDone,
+}: {
+  subject: string;
+  topic: string;
+  correct: number;
+  total: number;
+  resultData: {
+    oldScore: number;
+    newScore: number;
+    xpEarned: number;
+    newBadges: string[];
+  };
+  onRestart: () => void;
+  onDone?: () => void;
+}) {
+  // Use count-up hook from helpers
+  const animatedScore = useCountUp(resultData.oldScore, resultData.newScore, 1200);
+  const crossedThreshold = resultData.oldScore < 60 && resultData.newScore >= 60;
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white rounded-2xl border border-stone-100 p-8 shadow-sm text-center">
+        <span className="text-4xl block mb-2">🎯</span>
+        <h2 className="font-display text-2xl font-bold text-stone-900 mb-1">Practice Complete!</h2>
+        <p className="text-sm text-stone-500 mb-6">
+          You got <span className="font-bold text-stone-800">{correct}</span> out of {total} correct on {topic}
+        </p>
+
+        {/* ── VISIBLE SCORE ANIMATION (MONEY SHOT) ── */}
+        <div className="bg-stone-50 border border-stone-200 rounded-2xl p-6 mb-6">
+          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">
+            Topic Mastery Progress
+          </p>
+
+          <div className="flex items-baseline justify-center gap-3 mb-3">
+            <span className="text-sm line-through text-stone-400 font-display">
+              {resultData.oldScore}%
+            </span>
+            <span className="text-sm text-stone-400 font-display">→</span>
+            <span
+              className={`font-display text-4xl font-bold tabular-nums ${scoreTextColor(
+                animatedScore
+              )}`}
+            >
+              {animatedScore}%
+            </span>
+          </div>
+
+          {/* Animating Progress Bar */}
+          <div className="h-4 rounded-full bg-stone-200 overflow-hidden max-w-md mx-auto mb-3">
+            <div
+              className={`h-full rounded-full ${scoreColor(animatedScore)} transition-none`}
+              style={{ width: `${animatedScore}%` }}
+            />
+          </div>
+
+          {crossedThreshold && (
+            <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 px-4 py-1.5 rounded-full text-sm font-semibold mt-2">
+              <Sparkles size={16} />
+              <span>{topic} is no longer a weak topic!</span>
+            </div>
+          )}
+        </div>
+
+        {/* XP & Rewards */}
+        <div className="flex items-center justify-center gap-4 mb-6">
+          <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-2.5">
+            <Award size={20} className="text-indigo-600" />
+            <span className="font-display font-bold text-indigo-700">+{resultData.xpEarned} XP Earned</span>
+          </div>
+        </div>
+
+        {/* ── BADGE CELEBRATION (MASCOT INTEGRATION) ── */}
+        {resultData.newBadges.length > 0 && (
+          <div className="mb-6 p-6 rounded-2xl bg-gradient-to-r from-indigo-50 via-purple-50 to-indigo-50 border border-indigo-200 text-center">
+            {/* Mascot celebrating pose */}
+            <div className="w-28 h-28 mx-auto mb-3">
+              <img
+                src="/mascot-celebrate.svg"
+                alt="Achievement Unlocked!"
+                className="w-full h-full object-contain"
+                draggable={false}
+              />
+            </div>
+            <p className="text-xs uppercase font-bold tracking-wider text-indigo-600 mb-2">
+              🏆 New Achievement Unlocked!
+            </p>
+            <div className="flex justify-center flex-wrap gap-3">
+              {resultData.newBadges.map((b) => {
+                const info = badgeInfo(b);
+                return (
+                  <div key={b} className="flex items-center gap-2 bg-white rounded-xl px-3 py-2 shadow-sm border border-indigo-100">
+                    <span className="text-2xl">{info.emoji}</span>
+                    <span className="font-display text-sm font-bold text-stone-800">{info.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onRestart}
+            className="flex-1 flex items-center justify-center gap-2 bg-stone-100 hover:bg-stone-200 text-stone-700 font-display text-sm font-semibold py-3 rounded-xl transition-colors"
+          >
+            <RotateCcw size={16} />
+            Retake Quiz
+          </button>
+          <button
+            onClick={onDone}
+            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-display text-sm font-semibold py-3 rounded-xl transition-colors shadow-sm"
+          >
+            Return to Dashboard
+          </button>
+        </div>
       </div>
     </div>
   );

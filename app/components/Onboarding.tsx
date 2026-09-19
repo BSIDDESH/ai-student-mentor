@@ -11,10 +11,10 @@ interface Props {
 }
 
 export default function Onboarding({ onComplete }: Props) {
-  const [name,      setName]      = useState("");
-  const [klass,     setKlass]     = useState<number | null>(null);
-  const [loading,   setLoading]   = useState(false);
-  const [error,     setError]     = useState("");
+  const [name,    setName]    = useState("");
+  const [klass,   setKlass]   = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error,   setError]   = useState("");
 
   async function handleSubmit() {
     if (!name.trim() || !klass) return;
@@ -30,51 +30,69 @@ export default function Onboarding({ onComplete }: Props) {
     }
   }
 
+  const canSubmit = !!name.trim() && !!klass && !loading;
+
   return (
+    /*
+     * Dark cinematic hero — ONBOARDING ONLY.
+     * Every other screen keeps the existing dark-canvas orbital design.
+     * Background is slightly deeper (#0A0A0F) for maximum mascot contrast.
+     */
     <div
-      className="min-h-screen flex items-center justify-center px-4 py-12"
+      className="min-h-screen flex flex-col justify-center"
       style={{
-        background: "var(--canvas)",
-        backgroundImage: "radial-gradient(ellipse at 50% 0%, rgba(0,212,255,0.04) 0%, transparent 60%)",
+        background: "#0A0A0F",
+        color: "#F5F5F0",
       }}
     >
-      <div className="w-full max-w-md">
-        {/* Logo mark — decorative orbital ring */}
-        <div className="flex justify-center mb-8">
-          <div className="relative w-20 h-20">
-            <svg viewBox="0 0 80 80" className="w-full h-full">
-              {/* Outer ring */}
-              <circle cx="40" cy="40" r="37" fill="none" stroke="rgba(0,212,255,0.12)" strokeWidth="1" />
-              {/* Middle ring */}
-              <circle cx="40" cy="40" r="28" fill="none" stroke="rgba(0,212,255,0.20)" strokeWidth="1" />
-              {/* Inner circle */}
-              <circle cx="40" cy="40" r="16" fill="rgba(0,212,255,0.06)" stroke="rgba(0,212,255,0.35)" strokeWidth="1" />
-              {/* Center dot */}
-              <circle cx="40" cy="40" r="3" fill="#00d4ff" />
-            </svg>
-          </div>
+      <div className="max-w-md mx-auto w-full px-8 py-10 flex flex-col items-center gap-0">
+
+        {/* ── MASCOT — large, front-and-center, waving/welcoming ── */}
+        <div className="fade-up w-56 h-56 md:w-64 md:h-64 mb-2">
+          <img
+            src="/mascot-wave.svg"
+            alt="AI Mentor mascot waving"
+            className="w-full h-full object-contain"
+            draggable={false}
+          />
         </div>
 
-        <div className="text-center mb-10">
-          <h1 className="font-display text-4xl font-bold mb-3" style={{ color: "var(--text-1)" }}>
-            AI Mentor
-          </h1>
-          <p className="label-tele mb-3" style={{ color: "var(--text-3)" }}>
-            INITIALISE YOUR NAVIGATOR PROFILE
-          </p>
-          <p className="text-sm" style={{ color: "var(--text-2)" }}>
-            Your study companion for Classes 1–10. Adaptive, persistent, personalized.
-          </p>
-        </div>
+        {/* ── HERO HEADLINE — the one place in the app for bold marketing copy ── */}
+        <h1
+          className="fade-up-d1 font-display font-bold text-center leading-none mb-4"
+          style={{
+            fontSize: "clamp(2.5rem, 8vw, 4.5rem)",
+            lineHeight: 1.05,
+            color: "#F5F5F0",
+          }}
+        >
+          Know your gaps.<br />
+          <span style={{ color: "#F0824A" }}>Raise every score.</span>
+        </h1>
 
+        {/* ── SUBTITLE ── */}
+        <p
+          className="fade-up-d2 text-base text-center mb-8 max-w-xs"
+          style={{ color: "rgba(245,245,240,0.5)", lineHeight: 1.55 }}
+        >
+          Adaptive quizzes and an AI mentor, matched to your class and weakest topics — every session.
+        </p>
+
+        {/* ── FORM CARD — existing name + class-picker logic, unchanged ── */}
         <div
-          className="rounded-2xl p-6 space-y-6"
-          style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+          className="fade-up-d2 w-full rounded-2xl p-6 space-y-5"
+          style={{
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.08)",
+          }}
         >
           {/* Name input */}
           <div>
-            <label className="label-tele block mb-2" style={{ color: "var(--text-3)" }}>
-              CALLSIGN (YOUR NAME)
+            <label
+              className="text-xs font-semibold tracking-wider uppercase block mb-2"
+              style={{ color: "rgba(255,255,255,0.4)" }}
+            >
+              YOUR NAME
             </label>
             <input
               type="text"
@@ -84,18 +102,21 @@ export default function Onboarding({ onComplete }: Props) {
               placeholder="Enter your name"
               className="w-full px-4 py-3 rounded-xl text-sm outline-none"
               style={{
-                background: "var(--surface-2)",
-                border: "1px solid var(--border)",
-                color: "var(--text-1)",
-                caretColor: "#00d4ff",
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.10)",
+                color: "#F5F5F0",
+                caretColor: "#F0824A",
               }}
             />
           </div>
 
           {/* Class chips */}
           <div>
-            <label className="label-tele block mb-3" style={{ color: "var(--text-3)" }}>
-              MISSION CLASS
+            <label
+              className="text-xs font-semibold tracking-wider uppercase block mb-3"
+              style={{ color: "rgba(255,255,255,0.4)" }}
+            >
+              YOUR CLASS
             </label>
             <div className="grid grid-cols-5 gap-2">
               {CLASSES.map((c) => {
@@ -104,19 +125,19 @@ export default function Onboarding({ onComplete }: Props) {
                   <button
                     key={c}
                     onClick={() => setKlass(c)}
-                    className="py-3 rounded-xl font-mono-data text-sm font-bold"
+                    className="py-3 rounded-xl font-display text-sm font-bold transition-all"
                     style={
                       isSelected
                         ? {
-                            background: "rgba(0,212,255,0.12)",
-                            border: "1px solid rgba(0,212,255,0.40)",
-                            color: "#00d4ff",
-                            boxShadow: "0 0 12px 0 rgba(0,212,255,0.15)",
+                            background: "rgba(240,130,74,0.16)",
+                            border: "1px solid rgba(240,130,74,0.60)",
+                            color: "#F0824A",
+                            boxShadow: "0 0 16px 0 rgba(240,130,74,0.25)",
                           }
                         : {
-                            background: "var(--surface-2)",
-                            border: "1px solid var(--border)",
-                            color: "var(--text-2)",
+                            background: "rgba(255,255,255,0.04)",
+                            border: "1px solid rgba(255,255,255,0.08)",
+                            color: "rgba(245,245,240,0.50)",
                           }
                     }
                   >
@@ -130,23 +151,28 @@ export default function Onboarding({ onComplete }: Props) {
           {error && (
             <p className="text-sm" style={{ color: "#ff6b6b" }}>{error}</p>
           )}
-
-          <button
-            onClick={handleSubmit}
-            disabled={!name.trim() || !klass || loading}
-            className="w-full py-4 rounded-xl font-display text-sm font-bold disabled:opacity-40"
-            style={{
-              background: name.trim() && klass ? "rgba(0,212,255,0.10)" : "var(--surface-2)",
-              border: `1px solid ${name.trim() && klass ? "rgba(0,212,255,0.30)" : "var(--border)"}`,
-              color: name.trim() && klass ? "#00d4ff" : "var(--text-3)",
-              boxShadow: name.trim() && klass ? "0 0 20px 0 rgba(0,212,255,0.10)" : "none",
-            }}
-          >
-            {loading ? "INITIALISING…" : "LAUNCH NAVIGATOR →"}
-          </button>
         </div>
 
-        <p className="text-center text-sm mt-6" style={{ color: "var(--text-3)" }}>
+        {/* ── CTA — sun orange with glow, as specified ── */}
+        <button
+          onClick={handleSubmit}
+          disabled={!canSubmit}
+          className="fade-up-d3 w-full mt-4 py-4 rounded-xl font-display text-sm font-bold tracking-wide disabled:opacity-40"
+          style={{
+            background: canSubmit ? "#F0824A" : "rgba(255,255,255,0.06)",
+            color: canSubmit ? "#ffffff" : "rgba(245,245,240,0.30)",
+            boxShadow: canSubmit ? "0 0 24px rgba(240,130,74,0.50)" : "none",
+            border: "none",
+            transition: "background 0.2s, box-shadow 0.2s",
+          }}
+        >
+          {loading ? "INITIALISING…" : "LAUNCH NAVIGATOR →"}
+        </button>
+
+        <p
+          className="fade-up-d3 text-center text-sm mt-6"
+          style={{ color: "rgba(255,255,255,0.18)" }}
+        >
           First Commit Hackathon · Sep 2026
         </p>
       </div>

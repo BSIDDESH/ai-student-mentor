@@ -1,99 +1,67 @@
 @import "tailwindcss";
 
-/* ── Design Tokens ────────────────────────────────────────────────────────── */
+/* ── Design tokens ──────────────────────────────────────────────────────────── */
 :root {
-  /* Canvas */
-  --canvas:      #05070b;
-  --surface:     #0c0f14;
-  --surface-2:   #111520;
-  --surface-3:   #181d2a;
-
-  /* Text */
-  --text-1:      #e8e6e1;
-  --text-2:      #9ca3af;
-  --text-3:      #4b5563;
-
-  /* Accents — used sparingly */
-  --cyan:        #00d4ff;
-  --cyan-dim:    rgba(0, 212, 255, 0.10);
-  --violet:      #a855f7;
-  --violet-dim:  rgba(168, 85, 247, 0.10);
-  --gold:        #c9a84c;
-  --gold-dim:    rgba(201, 168, 76, 0.10);
-
-  /* Score bands — calibrated for dark canvas */
-  --score-low:       #ff6b6b;  /* coral red  < 60  */
-  --score-low-dim:   rgba(255, 107, 107, 0.10);
-  --score-mid:       #f59e0b;  /* amber       60-79 */
-  --score-mid-dim:   rgba(245, 158, 11, 0.10);
-  --score-high:      #00d4aa;  /* cyan-teal   80+  */
-  --score-high-dim:  rgba(0, 212, 170, 0.10);
-
-  /* Borders */
-  --border:      rgba(255, 255, 255, 0.07);
-  --border-2:    rgba(255, 255, 255, 0.04);
+  /* Palette */
+  --chalk:  #faf9f7;   /* warm white — page background */
+  --mist:   #f0ede8;   /* warm light grey — card section headers */
+  --ink:    #1c1917;   /* warm near-black — primary text */
+  --muted:  #78716c;   /* warm grey — secondary text */
+  --grape:  #4f46e5;   /* indigo-600 — primary accent */
+  --ember:  #f97316;   /* orange — streak counter only */
 
   /* Fonts */
-  --font-display: var(--font-syne,       "Syne",           system-ui, sans-serif);
-  --font-mono:    var(--font-jetbrains,  "JetBrains Mono", monospace);
-  --font-body:    var(--font-inter,      "Inter",          system-ui, sans-serif);
+  --font-display: var(--font-display, "Space Grotesk", system-ui, sans-serif);
+  --font-body:    var(--font-body,    "Inter", system-ui, sans-serif);
 
-  --background: var(--canvas);
-  --foreground: var(--text-1);
+  --background: var(--chalk);
+  --foreground: var(--ink);
 }
 
-/* ── Global Reset ─────────────────────────────────────────────────────────── */
+/* No dark-mode override for main dashboard — light & warm per roadmap */
+
+/* ── Global resets ──────────────────────────────────────────────────────────── */
 body {
-  background: var(--canvas);
-  color: var(--text-1);
+  background: var(--chalk);
+  color: var(--ink);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── Typography utilities ─────────────────────────────────────────────────── */
-.font-display   { font-family: var(--font-display); }
-.font-mono-data {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
+/* ── Utility classes usable everywhere ──────────────────────────────────────── */
+
+/* Display font — always use for: names, score numbers, XP, streak */
+.font-display {
+  font-family: var(--font-display);
 }
 
-/* Telemetry label — small tracked Inter, used for secondary readout keys */
-.label-tele {
-  font-family: var(--font-body);
-  font-size: 0.6875rem;      /* 11px — decorative only, never primary content */
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-3);
-}
+/* Score band colours */
+.text-score-low    { color: #f43f5e; }   /* rose-500   < 60  */
+.text-score-mid    { color: #f59e0b; }   /* amber-500  60-79 */
+.text-score-high   { color: #10b981; }   /* emerald-500 80+  */
 
-/* ── Surface / Card utilities ─────────────────────────────────────────────── */
-.surface      { background: var(--surface); }
-.surface-2    { background: var(--surface-2); }
-.border-dim   { border-color: var(--border); }
-.hairline     { border-top: 1px solid var(--border); }
+.bg-score-low      { background-color: #fff1f2; }   /* rose-50   */
+.bg-score-mid      { background-color: #fffbeb; }   /* amber-50  */
+.bg-score-high     { background-color: #ecfdf5; }   /* emerald-50 */
 
-/* ── Glow utilities (box-shadow only — no JS cost) ───────────────────────── */
-.glow-cyan      { box-shadow: 0 0 16px 2px rgba(0, 212, 255, 0.20); }
-.glow-gold      { box-shadow: 0 0 16px 2px rgba(201, 168, 76, 0.25); }
-.glow-score-low  { box-shadow: 0 0 8px 1px rgba(255, 107, 107, 0.45); }
-.glow-score-mid  { box-shadow: 0 0 8px 1px rgba(245, 158, 11, 0.45); }
-.glow-score-high { box-shadow: 0 0 8px 1px rgba(0, 212, 170, 0.45); }
-
-/* ── Badge states ─────────────────────────────────────────────────────────── */
+/* Badge — earned glow ring */
 .badge-earned {
-  background: var(--gold-dim);
-  border: 1px solid rgba(201, 168, 76, 0.35);
-  box-shadow: 0 0 20px 0 rgba(201, 168, 76, 0.10), inset 0 1px 0 rgba(201, 168, 76, 0.15);
-}
-.badge-locked {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px dashed rgba(255, 255, 255, 0.08);
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+  box-shadow: 0 0 0 2px #a5b4fc, 0 4px 12px 0 rgba(79, 70, 229, 0.15);
 }
 
-/* ── Scrollbar — dark theme ───────────────────────────────────────────────── */
-* { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent; }
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+/* Badge — locked slot */
+.badge-locked {
+  background: var(--mist);
+  border: 2px dashed #d6d3d1;
+}
+
+/* ── Onboarding-only fadeUp animation ────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up        { animation: fadeUp 0.5s ease-out both; }
+.fade-up-d1     { animation: fadeUp 0.5s ease-out 0.10s both; }
+.fade-up-d2     { animation: fadeUp 0.5s ease-out 0.20s both; }
+.fade-up-d3     { animation: fadeUp 0.5s ease-out 0.32s both; }
