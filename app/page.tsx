@@ -14,6 +14,15 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // 1. Direct URL check: ?onboarding or ?reset forces Onboarding screen
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("onboarding") || params.has("reset")) {
+      setShowOnboarding(true);
+      setLoading(false);
+      return;
+    }
+
+    // 2. Default API check
     getProfile()
       .then(({ exists, profile }) => {
         if (exists && profile) {
@@ -34,13 +43,25 @@ export default function Page() {
         onComplete={(p) => {
           setProfile(p);
           setShowOnboarding(false);
+          if (window.location.search.includes("onboarding") || window.location.search.includes("reset")) {
+            window.history.replaceState({}, "", window.location.pathname);
+          }
         }}
       />
     );
   }
 
   if (profile) {
-    return <DashboardShell profile={profile} setProfile={setProfile} />;
+    return (
+      <DashboardShell
+        profile={profile}
+        setProfile={setProfile}
+        signOut={() => {
+          setProfile(null);
+          setShowOnboarding(true);
+        }}
+      />
+    );
   }
 
   return null;
