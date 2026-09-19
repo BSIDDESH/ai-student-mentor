@@ -45,93 +45,59 @@ export default function Onboarding({ onComplete }: Props) {
       }}
     >
       <style>{`
+        @keyframes slowZoom {
+          0% { transform: scale(1); }
+          100% { transform: scale(1.06); }
+        }
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(16px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        @keyframes glowScale {
-          0% { transform: scale(0.85); opacity: 0; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-        @keyframes driftOne {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-7px) rotate(3deg); }
-        }
-        @keyframes driftTwo {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(8px) rotate(-4deg); }
-        }
-        @keyframes driftThree {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-6px); }
+
+        .anim-kenburns {
+          animation: slowZoom 9s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+          transform-origin: center center;
+          will-change: transform;
         }
 
         .anim-fadeup { animation: fadeUp 0.5s ease-out both; }
         .anim-fadeup-1 { animation: fadeUp 0.5s ease-out 0.08s both; }
         .anim-fadeup-2 { animation: fadeUp 0.5s ease-out 0.16s both; }
         .anim-fadeup-3 { animation: fadeUp 0.5s ease-out 0.24s both; }
-        
-        .anim-glow { animation: glowScale 2s ease-out both; }
-        .anim-drift-1 { animation: driftOne 5s ease-in-out infinite; }
-        .anim-drift-2 { animation: driftTwo 6s ease-in-out 1s infinite; }
-        .anim-drift-3 { animation: driftThree 4.5s ease-in-out 2s infinite; }
       `}</style>
 
-      {/* ── Ambient Drifting Shapes (Pure CSS, subtle atmospheric depth) ── */}
-      <div
-        className="anim-drift-1 pointer-events-none absolute top-16 left-[15%] md:left-[25%] w-10 h-10 rounded-full"
-        style={{
-          background: "radial-gradient(circle, rgba(240, 130, 74, 0.22) 0%, transparent 70%)",
-          filter: "blur(6px)",
-        }}
-        aria-hidden="true"
-      />
-      <div
-        className="anim-drift-2 pointer-events-none absolute top-28 right-[14%] md:right-[24%] w-14 h-14 rounded-full"
-        style={{
-          background: "radial-gradient(circle, rgba(62, 74, 137, 0.35) 0%, transparent 70%)",
-          filter: "blur(8px)",
-        }}
-        aria-hidden="true"
-      />
-      <div
-        className="anim-drift-3 pointer-events-none absolute bottom-36 left-[18%] md:left-[28%] w-8 h-8 rounded-full"
-        style={{
-          background: "radial-gradient(circle, rgba(201, 168, 76, 0.20) 0%, transparent 70%)",
-          filter: "blur(5px)",
-        }}
-        aria-hidden="true"
-      />
+      {/* ── Full-Bleed Animated Background Scene ── */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <img
+          src="/onboarding-bg.webp"
+          alt=""
+          width="1600"
+          height="900"
+          loading="eager"
+          className="anim-kenburns w-full h-full object-cover object-center"
+        />
+        {/* Subtle dark overlay for optimal typography legibility */}
+        <div
+          className="absolute inset-0"
+          style={{ backgroundColor: "rgba(10, 10, 15, 0.35)" }}
+        />
+      </div>
 
+      {/* ── Content Container (Above Background) ── */}
       <div className="relative z-10 max-w-md w-full mx-auto flex flex-col items-center text-center">
-        {/* ── Mascot Container with Ambient Radial Glow ── */}
-        <div className="relative flex items-center justify-center mb-3 shrink-0">
-          {/* Soft warm radial glow: scales from 0.85x to 1x over 2s */}
-          <div
-            className="anim-glow pointer-events-none absolute rounded-full"
-            style={{
-              width: "280px",
-              height: "280px",
-              background: "radial-gradient(circle, rgba(240, 130, 74, 0.18) 0%, rgba(201, 168, 76, 0.08) 50%, transparent 70%)",
-              filter: "blur(24px)",
-            }}
-            aria-hidden="true"
+        {/* ── Mascot: large, front-and-center, waving ── */}
+        <div className="anim-fadeup w-48 h-48 md:w-56 md:h-56 mb-2 shrink-0">
+          <img
+            src="/mascot-wave.svg"
+            alt="AI Mentor mascot welcoming you"
+            className="w-full h-full object-contain select-none drop-shadow-xl"
+            draggable={false}
           />
-
-          {/* Mascot */}
-          <div className="anim-fadeup relative z-10 w-56 h-56 md:w-64 md:h-64">
-            <img
-              src="/mascot-wave.svg"
-              alt="AI Mentor mascot welcoming you"
-              className="w-full h-full object-contain"
-              draggable={false}
-            />
-          </div>
         </div>
 
         {/* ── Headline: under 6 words, confident, marketing tone ── */}
         <h1
-          className="anim-fadeup-1 font-display font-bold leading-none mb-3"
+          className="anim-fadeup-1 font-display font-bold leading-none mb-3 drop-shadow-md"
           style={{
             fontSize: "clamp(2.5rem, 8vw, 4.25rem)",
             lineHeight: 1.05,
@@ -145,9 +111,9 @@ export default function Onboarding({ onComplete }: Props) {
 
         {/* ── Subtitle ── */}
         <p
-          className="anim-fadeup-2 text-sm md:text-base mb-8 max-w-sm"
+          className="anim-fadeup-2 text-sm md:text-base mb-7 max-w-sm drop-shadow"
           style={{
-            color: "rgba(245, 245, 240, 0.65)",
+            color: "rgba(245, 245, 240, 0.85)",
             lineHeight: 1.5,
           }}
         >
@@ -157,10 +123,11 @@ export default function Onboarding({ onComplete }: Props) {
         {/* ── Form Card ── */}
         <form
           onSubmit={handleSubmit}
-          className="anim-fadeup-2 w-full rounded-2xl p-6 text-left space-y-5"
+          className="anim-fadeup-2 w-full rounded-2xl p-6 text-left space-y-5 backdrop-blur-md"
           style={{
-            backgroundColor: "rgba(255, 255, 255, 0.04)",
-            border: "1px solid rgba(255, 255, 255, 0.08)",
+            backgroundColor: "rgba(10, 10, 15, 0.65)",
+            border: "1px solid rgba(255, 255, 255, 0.12)",
+            boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.37)",
           }}
         >
           {/* Name Field */}
@@ -168,7 +135,7 @@ export default function Onboarding({ onComplete }: Props) {
             <label
               htmlFor="student-name"
               className="block text-xs font-semibold uppercase tracking-wider mb-2 font-display"
-              style={{ color: "rgba(245, 245, 240, 0.5)" }}
+              style={{ color: "rgba(245, 245, 240, 0.7)" }}
             >
               Your Name
             </label>
@@ -178,10 +145,10 @@ export default function Onboarding({ onComplete }: Props) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Arjun"
-              className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all placeholder:text-stone-500"
+              className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all placeholder:text-stone-400"
               style={{
-                backgroundColor: "rgba(255, 255, 255, 0.06)",
-                border: "1px solid rgba(255, 255, 255, 0.12)",
+                backgroundColor: "rgba(255, 255, 255, 0.08)",
+                border: "1px solid rgba(255, 255, 255, 0.15)",
                 color: "#F5F5F0",
                 caretColor: "#F0824A",
               }}
@@ -192,7 +159,7 @@ export default function Onboarding({ onComplete }: Props) {
           <div>
             <label
               className="block text-xs font-semibold uppercase tracking-wider mb-2.5 font-display"
-              style={{ color: "rgba(245, 245, 240, 0.5)" }}
+              style={{ color: "rgba(245, 245, 240, 0.7)" }}
             >
               Your Class (1 to 10)
             </label>
@@ -208,16 +175,16 @@ export default function Onboarding({ onComplete }: Props) {
                     style={
                       isSelected
                         ? {
-                            backgroundColor: "rgba(240, 130, 74, 0.16)",
+                            backgroundColor: "rgba(240, 130, 74, 0.22)",
                             border: "1.5px solid #F0824A",
                             color: "#F0824A",
-                            boxShadow: "0 0 16px 0 rgba(240, 130, 74, 0.3)",
+                            boxShadow: "0 0 16px 0 rgba(240, 130, 74, 0.35)",
                             transform: "scale(1.02)",
                           }
                         : {
-                            backgroundColor: "rgba(255, 255, 255, 0.04)",
-                            border: "1px solid rgba(255, 255, 255, 0.08)",
-                            color: "rgba(245, 245, 240, 0.6)",
+                            backgroundColor: "rgba(255, 255, 255, 0.05)",
+                            border: "1px solid rgba(255, 255, 255, 0.10)",
+                            color: "rgba(245, 245, 240, 0.75)",
                           }
                     }
                   >
@@ -229,7 +196,7 @@ export default function Onboarding({ onComplete }: Props) {
           </div>
 
           {error && (
-            <p className="text-sm font-medium text-rose-400 bg-rose-500/10 border border-rose-500/20 px-3.5 py-2 rounded-xl">
+            <p className="text-sm font-medium text-rose-400 bg-rose-500/15 border border-rose-500/25 px-3.5 py-2 rounded-xl">
               {error}
             </p>
           )}
@@ -251,8 +218,8 @@ export default function Onboarding({ onComplete }: Props) {
         </form>
 
         <p
-          className="anim-fadeup-3 text-xs mt-6 tracking-wide"
-          style={{ color: "rgba(245, 245, 240, 0.25)" }}
+          className="anim-fadeup-3 text-xs mt-6 tracking-wide drop-shadow"
+          style={{ color: "rgba(245, 245, 240, 0.45)" }}
         >
           First Commit Hackathon · Sep 2026
         </p>
