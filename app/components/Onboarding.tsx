@@ -37,7 +37,7 @@ export default function Onboarding({ onComplete }: Props) {
 
   return (
     <div
-      className="min-h-screen w-full flex flex-col justify-center items-center px-6 py-12"
+      className="relative min-h-screen w-full flex flex-col justify-center items-center px-6 py-12 overflow-hidden select-none"
       style={{
         backgroundColor: "#0A0A0F",
         color: "#F5F5F0",
@@ -49,21 +49,84 @@ export default function Onboarding({ onComplete }: Props) {
           from { opacity: 0; transform: translateY(16px); }
           to { opacity: 1; transform: translateY(0); }
         }
+        @keyframes glowScale {
+          0% { transform: scale(0.85); opacity: 0; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes driftOne {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-7px) rotate(3deg); }
+        }
+        @keyframes driftTwo {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(8px) rotate(-4deg); }
+        }
+        @keyframes driftThree {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-6px); }
+        }
+
         .anim-fadeup { animation: fadeUp 0.5s ease-out both; }
         .anim-fadeup-1 { animation: fadeUp 0.5s ease-out 0.08s both; }
         .anim-fadeup-2 { animation: fadeUp 0.5s ease-out 0.16s both; }
         .anim-fadeup-3 { animation: fadeUp 0.5s ease-out 0.24s both; }
+        
+        .anim-glow { animation: glowScale 2s ease-out both; }
+        .anim-drift-1 { animation: driftOne 5s ease-in-out infinite; }
+        .anim-drift-2 { animation: driftTwo 6s ease-in-out 1s infinite; }
+        .anim-drift-3 { animation: driftThree 4.5s ease-in-out 2s infinite; }
       `}</style>
 
-      <div className="max-w-md w-full mx-auto flex flex-col items-center text-center">
-        {/* ── Mascot: large, front-and-center, waving ── */}
-        <div className="anim-fadeup w-56 h-56 md:w-64 md:h-64 mb-3 shrink-0">
-          <img
-            src="/mascot-wave.svg"
-            alt="AI Mentor mascot welcoming you"
-            className="w-full h-full object-contain select-none"
-            draggable={false}
+      {/* ── Ambient Drifting Shapes (Pure CSS, subtle atmospheric depth) ── */}
+      <div
+        className="anim-drift-1 pointer-events-none absolute top-16 left-[15%] md:left-[25%] w-10 h-10 rounded-full"
+        style={{
+          background: "radial-gradient(circle, rgba(240, 130, 74, 0.22) 0%, transparent 70%)",
+          filter: "blur(6px)",
+        }}
+        aria-hidden="true"
+      />
+      <div
+        className="anim-drift-2 pointer-events-none absolute top-28 right-[14%] md:right-[24%] w-14 h-14 rounded-full"
+        style={{
+          background: "radial-gradient(circle, rgba(62, 74, 137, 0.35) 0%, transparent 70%)",
+          filter: "blur(8px)",
+        }}
+        aria-hidden="true"
+      />
+      <div
+        className="anim-drift-3 pointer-events-none absolute bottom-36 left-[18%] md:left-[28%] w-8 h-8 rounded-full"
+        style={{
+          background: "radial-gradient(circle, rgba(201, 168, 76, 0.20) 0%, transparent 70%)",
+          filter: "blur(5px)",
+        }}
+        aria-hidden="true"
+      />
+
+      <div className="relative z-10 max-w-md w-full mx-auto flex flex-col items-center text-center">
+        {/* ── Mascot Container with Ambient Radial Glow ── */}
+        <div className="relative flex items-center justify-center mb-3 shrink-0">
+          {/* Soft warm radial glow: scales from 0.85x to 1x over 2s */}
+          <div
+            className="anim-glow pointer-events-none absolute rounded-full"
+            style={{
+              width: "280px",
+              height: "280px",
+              background: "radial-gradient(circle, rgba(240, 130, 74, 0.18) 0%, rgba(201, 168, 76, 0.08) 50%, transparent 70%)",
+              filter: "blur(24px)",
+            }}
+            aria-hidden="true"
           />
+
+          {/* Mascot */}
+          <div className="anim-fadeup relative z-10 w-56 h-56 md:w-64 md:h-64">
+            <img
+              src="/mascot-wave.svg"
+              alt="AI Mentor mascot welcoming you"
+              className="w-full h-full object-contain"
+              draggable={false}
+            />
+          </div>
         </div>
 
         {/* ── Headline: under 6 words, confident, marketing tone ── */}
