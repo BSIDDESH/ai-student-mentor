@@ -1,103 +1,154 @@
 "use client";
 
 import { useState } from "react";
-import type { Profile } from "@/app/lib/types";
 import { createProfile } from "@/app/lib/api";
+import type { Profile } from "@/app/lib/types";
+
+const CLASSES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 interface Props {
   onComplete: (profile: Profile) => void;
 }
 
 export default function Onboarding({ onComplete }: Props) {
-  const [name, setName] = useState("");
-  const [klass, setKlass] = useState<number | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [name,      setName]      = useState("");
+  const [klass,     setKlass]     = useState<number | null>(null);
+  const [loading,   setLoading]   = useState(false);
+  const [error,     setError]     = useState("");
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!name.trim()) return setError("Please enter your name.");
-    if (!klass) return setError("Please pick your class.");
-    setError("");
+  async function handleSubmit() {
+    if (!name.trim() || !klass) return;
     setLoading(true);
+    setError("");
     try {
       const { profile } = await createProfile(name.trim(), klass);
       onComplete(profile);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+    } catch {
+      setError("Something went wrong. Please retry.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "var(--chalk)" }}>
-      <div className="bg-white rounded-3xl border border-stone-100 p-8 w-full max-w-md shadow-sm">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-3xl mx-auto mb-3">
-            🎓
+    <div
+      className="min-h-screen flex items-center justify-center px-4 py-12"
+      style={{
+        background: "var(--canvas)",
+        backgroundImage: "radial-gradient(ellipse at 50% 0%, rgba(0,212,255,0.04) 0%, transparent 60%)",
+      }}
+    >
+      <div className="w-full max-w-md">
+        {/* Logo mark — decorative orbital ring */}
+        <div className="flex justify-center mb-8">
+          <div className="relative w-20 h-20">
+            <svg viewBox="0 0 80 80" className="w-full h-full">
+              {/* Outer ring */}
+              <circle cx="40" cy="40" r="37" fill="none" stroke="rgba(0,212,255,0.12)" strokeWidth="1" />
+              {/* Middle ring */}
+              <circle cx="40" cy="40" r="28" fill="none" stroke="rgba(0,212,255,0.20)" strokeWidth="1" />
+              {/* Inner circle */}
+              <circle cx="40" cy="40" r="16" fill="rgba(0,212,255,0.06)" stroke="rgba(0,212,255,0.35)" strokeWidth="1" />
+              {/* Center dot */}
+              <circle cx="40" cy="40" r="3" fill="#00d4ff" />
+            </svg>
           </div>
-          <h1 className="font-display text-2xl font-bold text-stone-900">Welcome to AI Mentor!</h1>
-          <p className="text-stone-500 text-sm mt-1.5 leading-relaxed">
-            Your personal adaptive learning companion. Tell us about yourself to get started.
+        </div>
+
+        <div className="text-center mb-10">
+          <h1 className="font-display text-4xl font-bold mb-3" style={{ color: "var(--text-1)" }}>
+            AI Mentor
+          </h1>
+          <p className="label-tele mb-3" style={{ color: "var(--text-3)" }}>
+            INITIALISE YOUR NAVIGATOR PROFILE
+          </p>
+          <p className="text-sm" style={{ color: "var(--text-2)" }}>
+            Your study companion for Classes 1–10. Adaptive, persistent, personalized.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Student Name */}
+        <div
+          className="rounded-2xl p-6 space-y-6"
+          style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+        >
+          {/* Name input */}
           <div>
-            <label className="block font-display text-sm font-bold text-stone-700 mb-2">
-              What should we call you?
+            <label className="label-tele block mb-2" style={{ color: "var(--text-3)" }}>
+              CALLSIGN (YOUR NAME)
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Arjun"
-              className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all placeholder:text-stone-400"
+              onKeyDown={(e) => e.key === "Enter" && klass && handleSubmit()}
+              placeholder="Enter your name"
+              className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+              style={{
+                background: "var(--surface-2)",
+                border: "1px solid var(--border)",
+                color: "var(--text-1)",
+                caretColor: "#00d4ff",
+              }}
             />
           </div>
 
-          {/* Class selection: 10 tappable chips */}
+          {/* Class chips */}
           <div>
-            <label className="block font-display text-sm font-bold text-stone-700 mb-2">
-              Select your class (1 to 10)
+            <label className="label-tele block mb-3" style={{ color: "var(--text-3)" }}>
+              MISSION CLASS
             </label>
-            <p className="text-xs text-stone-400 mb-3">
-              This sets the tone and difficulty of questions and AI explanations.
-            </p>
-            <div className="grid grid-cols-5 gap-2.5">
-              {Array.from({ length: 10 }, (_, i) => i + 1).map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setKlass(c)}
-                  className={`py-3 rounded-xl text-sm font-display font-bold border-2 transition-all ${
-                    klass === c
-                      ? "bg-indigo-600 text-white border-indigo-600 shadow-sm scale-[1.03]"
-                      : "bg-stone-50 text-stone-700 border-stone-200 hover:border-indigo-300"
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
+            <div className="grid grid-cols-5 gap-2">
+              {CLASSES.map((c) => {
+                const isSelected = klass === c;
+                return (
+                  <button
+                    key={c}
+                    onClick={() => setKlass(c)}
+                    className="py-3 rounded-xl font-mono-data text-sm font-bold"
+                    style={
+                      isSelected
+                        ? {
+                            background: "rgba(0,212,255,0.12)",
+                            border: "1px solid rgba(0,212,255,0.40)",
+                            color: "#00d4ff",
+                            boxShadow: "0 0 12px 0 rgba(0,212,255,0.15)",
+                          }
+                        : {
+                            background: "var(--surface-2)",
+                            border: "1px solid var(--border)",
+                            color: "var(--text-2)",
+                          }
+                    }
+                  >
+                    {String(c).padStart(2, "0")}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           {error && (
-            <div className="text-sm font-medium text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-4 py-3">
-              {error}
-            </div>
+            <p className="text-sm" style={{ color: "#ff6b6b" }}>{error}</p>
           )}
 
           <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-display text-base font-semibold rounded-xl py-3.5 transition-colors shadow-sm"
+            onClick={handleSubmit}
+            disabled={!name.trim() || !klass || loading}
+            className="w-full py-4 rounded-xl font-display text-sm font-bold disabled:opacity-40"
+            style={{
+              background: name.trim() && klass ? "rgba(0,212,255,0.10)" : "var(--surface-2)",
+              border: `1px solid ${name.trim() && klass ? "rgba(0,212,255,0.30)" : "var(--border)"}`,
+              color: name.trim() && klass ? "#00d4ff" : "var(--text-3)",
+              boxShadow: name.trim() && klass ? "0 0 20px 0 rgba(0,212,255,0.10)" : "none",
+            }}
           >
-            {loading ? "Creating your profile…" : "Start Learning →"}
+            {loading ? "INITIALISING…" : "LAUNCH NAVIGATOR →"}
           </button>
-        </form>
+        </div>
+
+        <p className="text-center text-sm mt-6" style={{ color: "var(--text-3)" }}>
+          First Commit Hackathon · Sep 2026
+        </p>
       </div>
     </div>
   );

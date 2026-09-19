@@ -18,16 +18,29 @@ export function weakTopics(subjects: Subjects): WeakTopic[] {
     .sort((a, b) => a.score - b.score); // worst first
 }
 
-// ── Score colour bands ─────────────────────────────────────────────────────────
-// red <60 · amber 60–79 · green 80+
+// ── Score colour bands (dark-canvas calibrated) ────────────────────────────
+// coral-red <60 · amber 60–79 · cyan-teal 80+
+// These render against var(--canvas) / var(--surface) backgrounds.
 export const scoreColor = (score: number): string =>
-  score < 60 ? "bg-rose-500" : score < 80 ? "bg-amber-500" : "bg-emerald-500";
+  score < 60 ? "bg-[#ff6b6b]" : score < 80 ? "bg-amber-400" : "bg-[#00d4aa]";
 
 export const scoreTextColor = (score: number): string =>
-  score < 60 ? "text-rose-600" : score < 80 ? "text-amber-600" : "text-emerald-600";
+  score < 60 ? "text-[#ff6b6b]" : score < 80 ? "text-amber-400" : "text-[#00d4aa]";
 
 export const scoreBorderColor = (score: number): string =>
-  score < 60 ? "border-rose-400" : score < 80 ? "border-amber-400" : "border-emerald-400";
+  score < 60 ? "border-[#ff6b6b]" : score < 80 ? "border-amber-400" : "border-[#00d4aa]";
+
+// Inline box-shadow string — for glowing progress bars (no JS cost)
+export const scoreGlow = (score: number): string =>
+  score < 60
+    ? "0 0 8px 1px rgba(255, 107, 107, 0.55)"
+    : score < 80
+    ? "0 0 8px 1px rgba(245, 158, 11, 0.55)"
+    : "0 0 8px 1px rgba(0, 212, 170, 0.55)";
+
+// Raw hex — for SVG stroke colour and inline style use
+export const scoreHex = (score: number): string =>
+  score < 60 ? "#ff6b6b" : score < 80 ? "#f59e0b" : "#00d4aa";
 
 // ── Day arc (time-of-day greeting) ────────────────────────────────────────────
 type DayArcPhase = "morning" | "afternoon" | "evening";
