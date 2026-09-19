@@ -11,13 +11,16 @@ interface Props {
 }
 
 export default function Onboarding({ onComplete }: Props) {
-  const [name,    setName]    = useState("");
-  const [klass,   setKlass]   = useState<number | null>(null);
+  const [name, setName] = useState("");
+  const [klass, setKlass] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState("");
+  const [error, setError] = useState("");
 
-  async function handleSubmit() {
-    if (!name.trim() || !klass) return;
+  async function handleSubmit(e?: React.FormEvent) {
+    if (e) e.preventDefault();
+    if (!name.trim()) return setError("Please enter your name.");
+    if (!klass) return setError("Please select your class.");
+
     setLoading(true);
     setError("");
     try {
@@ -33,90 +36,102 @@ export default function Onboarding({ onComplete }: Props) {
   const canSubmit = !!name.trim() && !!klass && !loading;
 
   return (
-    /*
-     * Dark cinematic hero — ONBOARDING ONLY.
-     * Every other screen keeps the existing dark-canvas orbital design.
-     * Background is slightly deeper (#0A0A0F) for maximum mascot contrast.
-     */
     <div
-      className="min-h-screen flex flex-col justify-center"
+      className="min-h-screen w-full flex flex-col justify-center items-center px-6 py-12"
       style={{
-        background: "#0A0A0F",
+        backgroundColor: "#0A0A0F",
         color: "#F5F5F0",
+        minHeight: "100vh",
       }}
     >
-      <div className="max-w-md mx-auto w-full px-8 py-10 flex flex-col items-center gap-0">
+      <style>{`
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(16px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .anim-fadeup { animation: fadeUp 0.5s ease-out both; }
+        .anim-fadeup-1 { animation: fadeUp 0.5s ease-out 0.08s both; }
+        .anim-fadeup-2 { animation: fadeUp 0.5s ease-out 0.16s both; }
+        .anim-fadeup-3 { animation: fadeUp 0.5s ease-out 0.24s both; }
+      `}</style>
 
-        {/* ── MASCOT — large, front-and-center, waving/welcoming ── */}
-        <div className="fade-up w-56 h-56 md:w-64 md:h-64 mb-2">
+      <div className="max-w-md w-full mx-auto flex flex-col items-center text-center">
+        {/* ── Mascot: large, front-and-center, waving ── */}
+        <div className="anim-fadeup w-56 h-56 md:w-64 md:h-64 mb-3 shrink-0">
           <img
             src="/mascot-wave.svg"
-            alt="AI Mentor mascot waving"
-            className="w-full h-full object-contain"
+            alt="AI Mentor mascot welcoming you"
+            className="w-full h-full object-contain select-none"
             draggable={false}
           />
         </div>
 
-        {/* ── HERO HEADLINE — the one place in the app for bold marketing copy ── */}
+        {/* ── Headline: under 6 words, confident, marketing tone ── */}
         <h1
-          className="fade-up-d1 font-display font-bold text-center leading-none mb-4"
+          className="anim-fadeup-1 font-display font-bold leading-none mb-3"
           style={{
-            fontSize: "clamp(2.5rem, 8vw, 4.5rem)",
+            fontSize: "clamp(2.5rem, 8vw, 4.25rem)",
             lineHeight: 1.05,
             color: "#F5F5F0",
+            fontWeight: 700,
           }}
         >
           Know your gaps.<br />
           <span style={{ color: "#F0824A" }}>Raise every score.</span>
         </h1>
 
-        {/* ── SUBTITLE ── */}
+        {/* ── Subtitle ── */}
         <p
-          className="fade-up-d2 text-base text-center mb-8 max-w-xs"
-          style={{ color: "rgba(245,245,240,0.5)", lineHeight: 1.55 }}
-        >
-          Adaptive quizzes and an AI mentor, matched to your class and weakest topics — every session.
-        </p>
-
-        {/* ── FORM CARD — existing name + class-picker logic, unchanged ── */}
-        <div
-          className="fade-up-d2 w-full rounded-2xl p-6 space-y-5"
+          className="anim-fadeup-2 text-sm md:text-base mb-8 max-w-sm"
           style={{
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.08)",
+            color: "rgba(245, 245, 240, 0.65)",
+            lineHeight: 1.5,
           }}
         >
-          {/* Name input */}
+          Adaptive quizzes and a personal AI mentor, matched to your class and weakest topics.
+        </p>
+
+        {/* ── Form Card ── */}
+        <form
+          onSubmit={handleSubmit}
+          className="anim-fadeup-2 w-full rounded-2xl p-6 text-left space-y-5"
+          style={{
+            backgroundColor: "rgba(255, 255, 255, 0.04)",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+          }}
+        >
+          {/* Name Field */}
           <div>
             <label
-              className="text-xs font-semibold tracking-wider uppercase block mb-2"
-              style={{ color: "rgba(255,255,255,0.4)" }}
+              htmlFor="student-name"
+              className="block text-xs font-semibold uppercase tracking-wider mb-2 font-display"
+              style={{ color: "rgba(245, 245, 240, 0.5)" }}
             >
-              YOUR NAME
+              Your Name
             </label>
             <input
+              id="student-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && klass && handleSubmit()}
-              placeholder="Enter your name"
-              className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+              placeholder="e.g. Arjun"
+              className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all placeholder:text-stone-500"
               style={{
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.10)",
+                backgroundColor: "rgba(255, 255, 255, 0.06)",
+                border: "1px solid rgba(255, 255, 255, 0.12)",
                 color: "#F5F5F0",
                 caretColor: "#F0824A",
               }}
             />
           </div>
 
-          {/* Class chips */}
+          {/* Class Picker */}
           <div>
             <label
-              className="text-xs font-semibold tracking-wider uppercase block mb-3"
-              style={{ color: "rgba(255,255,255,0.4)" }}
+              className="block text-xs font-semibold uppercase tracking-wider mb-2.5 font-display"
+              style={{ color: "rgba(245, 245, 240, 0.5)" }}
             >
-              YOUR CLASS
+              Your Class (1 to 10)
             </label>
             <div className="grid grid-cols-5 gap-2">
               {CLASSES.map((c) => {
@@ -124,20 +139,22 @@ export default function Onboarding({ onComplete }: Props) {
                 return (
                   <button
                     key={c}
+                    type="button"
                     onClick={() => setKlass(c)}
                     className="py-3 rounded-xl font-display text-sm font-bold transition-all"
                     style={
                       isSelected
                         ? {
-                            background: "rgba(240,130,74,0.16)",
-                            border: "1px solid rgba(240,130,74,0.60)",
+                            backgroundColor: "rgba(240, 130, 74, 0.16)",
+                            border: "1.5px solid #F0824A",
                             color: "#F0824A",
-                            boxShadow: "0 0 16px 0 rgba(240,130,74,0.25)",
+                            boxShadow: "0 0 16px 0 rgba(240, 130, 74, 0.3)",
+                            transform: "scale(1.02)",
                           }
                         : {
-                            background: "rgba(255,255,255,0.04)",
-                            border: "1px solid rgba(255,255,255,0.08)",
-                            color: "rgba(245,245,240,0.50)",
+                            backgroundColor: "rgba(255, 255, 255, 0.04)",
+                            border: "1px solid rgba(255, 255, 255, 0.08)",
+                            color: "rgba(245, 245, 240, 0.6)",
                           }
                     }
                   >
@@ -149,29 +166,30 @@ export default function Onboarding({ onComplete }: Props) {
           </div>
 
           {error && (
-            <p className="text-sm" style={{ color: "#ff6b6b" }}>{error}</p>
+            <p className="text-sm font-medium text-rose-400 bg-rose-500/10 border border-rose-500/20 px-3.5 py-2 rounded-xl">
+              {error}
+            </p>
           )}
-        </div>
 
-        {/* ── CTA — sun orange with glow, as specified ── */}
-        <button
-          onClick={handleSubmit}
-          disabled={!canSubmit}
-          className="fade-up-d3 w-full mt-4 py-4 rounded-xl font-display text-sm font-bold tracking-wide disabled:opacity-40"
-          style={{
-            background: canSubmit ? "#F0824A" : "rgba(255,255,255,0.06)",
-            color: canSubmit ? "#ffffff" : "rgba(245,245,240,0.30)",
-            boxShadow: canSubmit ? "0 0 24px rgba(240,130,74,0.50)" : "none",
-            border: "none",
-            transition: "background 0.2s, box-shadow 0.2s",
-          }}
-        >
-          {loading ? "INITIALISING…" : "LAUNCH NAVIGATOR →"}
-        </button>
+          {/* ── Glowing CTA Button ── */}
+          <button
+            type="submit"
+            disabled={!canSubmit}
+            className="anim-fadeup-3 w-full py-4 rounded-xl font-display text-sm font-bold tracking-wide transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{
+              backgroundColor: canSubmit ? "#F0824A" : "rgba(255, 255, 255, 0.08)",
+              color: canSubmit ? "#FFFFFF" : "rgba(245, 245, 240, 0.35)",
+              boxShadow: canSubmit ? "0 0 24px rgba(240, 130, 74, 0.5)" : "none",
+              border: "none",
+            }}
+          >
+            {loading ? "Initialising…" : "Launch Navigator →"}
+          </button>
+        </form>
 
         <p
-          className="fade-up-d3 text-center text-sm mt-6"
-          style={{ color: "rgba(255,255,255,0.18)" }}
+          className="anim-fadeup-3 text-xs mt-6 tracking-wide"
+          style={{ color: "rgba(245, 245, 240, 0.25)" }}
         >
           First Commit Hackathon · Sep 2026
         </p>
