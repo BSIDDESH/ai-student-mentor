@@ -1,51 +1,71 @@
 // lib/api.ts — THE ONLY PLACE fetch() APPEARS
-// Flip these to false one endpoint at a time as Siddu's routes go live.
+// Endpoints wired to backend with client-generated X-User-Id + ngrok header.
 // NEVER call fetch() directly from a component — always go through here.
 
-import { fetchAuthSession } from "aws-amplify/auth";
 import { MOCK_PROFILE, MOCK_QUIZ } from "./mocks";
 import type { Profile, QuizQuestion, ChatMessage } from "./types";
 
-// ── Mock switches (flip per-endpoint as Siddu's routes go live) ──────────────
-const USE_MOCKS = {
-  profile: true,
-  chat: true,
-  quiz: true,
-  wellness: true,
+// ── Mock switches (flip per-endpoint as backend routes go live) ──────────────
+export const USE_MOCKS = {
+  profile: false,
+  chat: false,
+  quiz: false,
+  wellness: false,
 };
 
 const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "";
 
-// Artificial delay — keep these. They force real loading states on Day 1
-// so real latency on Friday doesn't surprise you.
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+// Storage key for anonymous user identity
+const USER_ID_KEY = "ai_mentor_user_id";
 
-// ── Auth header helper (used from Day 2 onward) ───────────────────────────────
-async function authHeaders(): Promise<Record<string, string>> {
-  try {
-    const session = await fetchAuthSession();
-    const token = session.tokens?.idToken?.toString();
-    return {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    };
-  } catch {
-    // During mock phase, auth isn't configured — return empty headers
-    return { "Content-Type": "application/json" };
+// ── Client-side User ID helper with SSR guard ─────────────────────────────────
+export function getUserId(): string {
+  if (typeof window === "undefined") {
+    return "ssr-user";
   }
+  try {
+    let id = localStorage.getItem(USER_ID_KEY);
+    if (!id) {
+      id = typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `user-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+      localStorage.setItem(USER_ID_KEY, id);
+    }
+    return id;
+  } catch {
+    return "fallback-user";
+  }
+}
+
+// ── Auth headers helper ───────────────────────────────────────────────────────
+export function authHeaders(): Record<string, string> {
+  return {
+    "Content-Type": "application/json",
+    "X-User-Id": getUserId(),
+    "ngrok-skip-browser-warning": "true",
+  };
 }
 
 // ── Base fetch wrapper ────────────────────────────────────────────────────────
 async function call(path: string, method = "GET", body?: unknown) {
   const res = await fetch(`${BASE}${path}`, {
     method,
-    headers: await authHeaders(),
+    headers: authHeaders(),
     body: body ? JSON.stringify(body) : undefined,
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error ?? "Something went wrong. Please try again.");
+  if (!res.ok) {
+    const message =
+      typeof data.detail === "string"
+        ? data.detail
+        : data.error || (Array.isArray(data.detail) && data.detail[0]?.msg ? data.detail[0].msg : "Something went wrong. Please try again.");
+    throw new Error(message);
+  }
   return data;
 }
+
+// Artificial delay for mock mode
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 // ── Profile ───────────────────────────────────────────────────────────────────
 
