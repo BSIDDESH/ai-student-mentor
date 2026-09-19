@@ -47,7 +47,7 @@ export default function Onboarding({ onComplete }: Props) {
       <style>{`
         @keyframes slowZoom {
           0% { transform: scale(1); }
-          100% { transform: scale(1.06); }
+          100% { transform: scale(1.03); }
         }
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(16px); }
@@ -74,7 +74,8 @@ export default function Onboarding({ onComplete }: Props) {
           width="1600"
           height="900"
           loading="eager"
-          className="anim-kenburns w-full h-full object-cover object-center"
+          className="anim-kenburns w-full h-full object-cover"
+          style={{ objectPosition: "center 20%" }}
         />
         {/* Subtle dark overlay for optimal typography legibility */}
         <div
@@ -123,11 +124,13 @@ export default function Onboarding({ onComplete }: Props) {
         {/* ── Form Card ── */}
         <form
           onSubmit={handleSubmit}
-          className="anim-fadeup-2 w-full rounded-2xl p-6 text-left space-y-5 backdrop-blur-md"
+          className="anim-fadeup-2 w-full rounded-2xl p-6 text-left space-y-5"
           style={{
-            backgroundColor: "rgba(10, 10, 15, 0.65)",
-            border: "1px solid rgba(255, 255, 255, 0.12)",
-            boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.37)",
+            backgroundColor: "rgba(255, 255, 255, 0.08)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            border: "1px solid rgba(255, 255, 255, 0.15)",
+            boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.25)",
           }}
         >
           {/* Name Field */}
