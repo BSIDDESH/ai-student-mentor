@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import type { Profile } from "@/app/lib/types";
@@ -57,7 +57,7 @@ export default function DashboardShell({ profile, setProfile, signOut }: Props) 
     if (delay > 0) {
       setLoadingTab(newTab);
       setTab(newTab);
-      // Clear loading after delay — real API calls would replace this with actual load state
+      // Clear loading after delay 窶・real API calls would replace this with actual load state
       const t = setTimeout(() => setLoadingTab(null), delay);
       return () => clearTimeout(t);
     } else {
@@ -84,7 +84,7 @@ export default function DashboardShell({ profile, setProfile, signOut }: Props) 
   <ToastProvider>
     <div className="min-h-screen flex flex-col md:flex-row" style={{ background: "var(--chalk)" }}>
 
-      {/* ── Sidebar — desktop only ─────────────────────────────────────────── */}
+      {/* 笏笏 Sidebar 窶・desktop only 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏 */}
       <aside
         className="hidden md:flex flex-col w-64 min-h-screen shrink-0 border-r"
         style={{ background: "white", borderColor: "#e7e5e4" }}
@@ -113,7 +113,7 @@ export default function DashboardShell({ profile, setProfile, signOut }: Props) 
                 <p className="text-sm text-stone-500 mt-1">XP · Level {level}</p>
               </div>
               <div className="text-center">
-                <span className="text-2xl leading-none">🔥</span>
+                <span className="text-2xl leading-none">🔥</span>
                 <p className="font-display text-sm font-bold text-stone-700 mt-1 tabular-nums">
                   {profile.streak}d
                 </p>
@@ -166,10 +166,10 @@ export default function DashboardShell({ profile, setProfile, signOut }: Props) 
         </div>
       </aside>
 
-      {/* ── Main content ───────────────────────────────────────────────────── */}
+      {/* 笏笏 Main content 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏 */}
       <main className="flex-1 min-w-0 pb-20 md:pb-8">
 
-        {/* ── DASHBOARD ── */}
+        {/* 笏笏 DASHBOARD 笏笏 */}
         {tab === "dashboard" && !isLoading && (
           <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
             <DayArcHero profile={profile} />
@@ -188,11 +188,11 @@ export default function DashboardShell({ profile, setProfile, signOut }: Props) 
           </div>
         )}
 
-        {/* ── MENTOR CHAT ── */}
+        {/* 笏笏 MENTOR CHAT 笏笏 */}
         {tab === "chat" && !isLoading && <MentorChat profile={profile} />}
         {tab === "chat" && isLoading && <SkeletonChat />}
 
-        {/* ── QUIZ ── */}
+        {/* 笏笏 QUIZ 笏笏 */}
         {tab === "quiz" && !isLoading && (
           <QuizFlow
             profile={profile}
@@ -206,14 +206,14 @@ export default function DashboardShell({ profile, setProfile, signOut }: Props) 
         )}
         {tab === "quiz" && isLoading && <SkeletonQuiz />}
 
-        {/* ── WELLNESS ── */}
+        {/* 笏笏 WELLNESS 笏笏 */}
         {tab === "wellness" && !isLoading && (
           <WellnessPanel profile={profile} setProfile={setProfile} />
         )}
         {tab === "wellness" && isLoading && <SkeletonWellness />}
       </main>
 
-      {/* ── Bottom tab bar — mobile only ──────────────────────────────────── */}
+      {/* 笏笏 Bottom tab bar 窶・mobile only 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏 */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 flex md:hidden z-20">
         {tabs.map(({ id, label, icon: Icon }) => (
           <button
@@ -236,3 +236,5 @@ export default function DashboardShell({ profile, setProfile, signOut }: Props) 
   </ToastProvider>
   );
 }
+
+
