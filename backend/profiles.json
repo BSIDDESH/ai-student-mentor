@@ -1,0 +1,415 @@
+{
+  "test123": {
+    "userId": "test123",
+    "name": "Anusha",
+    "klass": 6,
+    "xp": 90,
+    "streak": 1,
+    "lastActive": "2026-09-19",
+    "badges": [
+      "first_quiz"
+    ],
+    "subjects": {
+      "Mathematics": {
+        "Fractions": {
+          "score": 67,
+          "attempts": 2,
+          "lastAttempt": "2026-09-19T10:33:41.872803Z"
+        }
+      },
+      "Science": {
+        "States of Matter": {
+          "score": 58,
+          "attempts": 0,
+          "lastAttempt": null
+        }
+      },
+      "Social Science": {
+        "Civics": {
+          "score": 70,
+          "attempts": 0,
+          "lastAttempt": null
+        }
+      },
+      "English": {
+        "Comprehension": {
+          "score": 80,
+          "attempts": 0,
+          "lastAttempt": null
+        }
+      }
+    },
+    "wellness": {
+      "hydration": 1,
+      "breaks": 0,
+      "activities": 0,
+      "date": "2026-09-19"
+    },
+    "dailyGoals": [
+      {
+        "id": "quiz1",
+        "label": "Complete 1 practice quiz",
+        "done": true
+      },
+      {
+        "id": "water4",
+        "label": "Log 4 glasses of water",
+        "done": false
+      },
+      {
+        "id": "move1",
+        "label": "One movement break",
+        "done": false
+      },
+      {
+        "id": "chat1",
+        "label": "Ask your mentor a question",
+        "done": true
+      }
+    ],
+    "createdAt": "2026-09-19T09:42:57.337504Z",
+    "updatedAt": "2026-09-19T10:33:41.872803Z"
+  },
+  "test-user-123": {
+    "userId": "test-user-123",
+    "name": "Arjun",
+    "klass": 7,
+    "xp": 10,
+    "streak": 1,
+    "lastActive": "2026-09-20",
+    "badges": [],
+    "subjects": {
+      "Mathematics": {
+        "Fractions": {
+          "score": 45,
+          "attempts": 0,
+          "lastAttempt": null
+        }
+      },
+      "Science": {
+        "States of Matter": {
+          "score": 58,
+          "attempts": 0,
+          "lastAttempt": null
+        }
+      },
+      "Social Science": {
+        "Civics": {
+          "score": 70,
+          "attempts": 0,
+          "lastAttempt": null
+        }
+      },
+      "English": {
+        "Comprehension": {
+          "score": 80,
+          "attempts": 0,
+          "lastAttempt": null
+        }
+      }
+    },
+    "wellness": {
+      "hydration": 1,
+      "breaks": 0,
+      "activities": 0,
+      "date": "2026-09-20"
+    },
+    "dailyGoals": [
+      {
+        "id": "quiz1",
+        "label": "Complete 1 practice quiz",
+        "done": false
+      },
+      {
+        "id": "water4",
+        "label": "Log 4 glasses of water",
+        "done": false
+      },
+      {
+        "id": "move1",
+        "label": "One movement break",
+        "done": false
+      },
+      {
+        "id": "chat1",
+        "label": "Ask your mentor a question",
+        "done": true
+      }
+    ],
+    "createdAt": "2026-09-19T19:44:05.003431Z",
+    "updatedAt": "2026-09-19T19:58:58.607726Z"
+  },
+  "test-node-user": {
+    "userId": "test-node-user",
+    "name": "Maya",
+    "klass": 6,
+    "xp": 50,
+    "streak": 1,
+    "lastActive": "2026-09-20",
+    "badges": [
+      "first_quiz"
+    ],
+    "subjects": {
+      "Mathematics": {
+        "Fractions": {
+          "score": 59,
+          "attempts": 1,
+          "lastAttempt": "2026-09-19T19:50:58.494775Z"
+        }
+      },
+      "Science": {
+        "States of Matter": {
+          "score": 58,
+          "attempts": 0,
+          "lastAttempt": null
+        }
+      },
+      "Social Science": {
+        "Civics": {
+          "score": 70,
+          "attempts": 0,
+          "lastAttempt": null
+        }
+      },
+      "English": {
+        "Comprehension": {
+          "score": 80,
+          "attempts": 0,
+          "lastAttempt": null
+        }
+      }
+    },
+    "wellness": {
+      "hydration": 1,
+      "breaks": 0,
+      "activities": 0,
+      "date": "2026-09-20"
+    },
+    "dailyGoals": [
+      {
+        "id": "quiz1",
+        "label": "Complete 1 practice quiz",
+        "done": true
+      },
+      {
+        "id": "water4",
+        "label": "Log 4 glasses of water",
+        "done": false
+      },
+      {
+        "id": "move1",
+        "label": "One movement break",
+        "done": false
+      },
+      {
+        "id": "chat1",
+        "label": "Ask your mentor a question",
+        "done": true
+      }
+    ],
+    "createdAt": "2026-09-19T19:50:50.988809Z",
+    "updatedAt": "2026-09-19T20:13:31.297496Z"
+  },
+  "20cd99c1-76a4-4669-ac52-cc6e33b9a5de": {
+    "userId": "20cd99c1-76a4-4669-ac52-cc6e33b9a5de",
+    "name": "manjunath",
+    "klass": 3,
+    "xp": 0,
+    "streak": 1,
+    "lastActive": "2026-09-20",
+    "badges": [],
+    "subjects": {
+      "Mathematics": {
+        "Fractions": {
+          "score": 45,
+          "attempts": 0,
+          "lastAttempt": null
+        }
+      },
+      "English": {
+        "Grammar": {
+          "score": 72,
+          "attempts": 0,
+          "lastAttempt": null
+        }
+      },
+      "EVS": {
+        "Plants": {
+          "score": 85,
+          "attempts": 0,
+          "lastAttempt": null
+        }
+      }
+    },
+    "wellness": {
+      "hydration": 0,
+      "breaks": 0,
+      "activities": 0,
+      "date": "2026-09-20"
+    },
+    "dailyGoals": [
+      {
+        "id": "quiz1",
+        "label": "Complete 1 practice quiz",
+        "done": false
+      },
+      {
+        "id": "water4",
+        "label": "Log 4 glasses of water",
+        "done": false
+      },
+      {
+        "id": "move1",
+        "label": "One movement break",
+        "done": false
+      },
+      {
+        "id": "chat1",
+        "label": "Ask your mentor a question",
+        "done": true
+      }
+    ],
+    "createdAt": "2026-09-19T20:20:08.841308Z",
+    "updatedAt": "2026-09-19T20:21:29.806788Z"
+  },
+  "student-test-1789848913766": {
+    "userId": "student-test-1789848913766",
+    "name": "Rohit",
+    "klass": 7,
+    "xp": 70,
+    "streak": 1,
+    "lastActive": "2026-09-20",
+    "badges": [
+      "first_quiz"
+    ],
+    "subjects": {
+      "Mathematics": {
+        "Fractions": {
+          "score": 67,
+          "attempts": 1,
+          "lastAttempt": "2026-09-19T20:17:38.148902Z"
+        }
+      },
+      "Science": {
+        "States of Matter": {
+          "score": 58,
+          "attempts": 0,
+          "lastAttempt": null
+        }
+      },
+      "Social Science": {
+        "Civics": {
+          "score": 70,
+          "attempts": 0,
+          "lastAttempt": null
+        }
+      },
+      "English": {
+        "Comprehension": {
+          "score": 80,
+          "attempts": 0,
+          "lastAttempt": null
+        }
+      }
+    },
+    "wellness": {
+      "hydration": 0,
+      "breaks": 0,
+      "activities": 0,
+      "date": "2026-09-20"
+    },
+    "dailyGoals": [
+      {
+        "id": "quiz1",
+        "label": "Complete 1 practice quiz",
+        "done": true
+      },
+      {
+        "id": "water4",
+        "label": "Log 4 glasses of water",
+        "done": false
+      },
+      {
+        "id": "move1",
+        "label": "One movement break",
+        "done": false
+      },
+      {
+        "id": "chat1",
+        "label": "Ask your mentor a question",
+        "done": true
+      }
+    ],
+    "createdAt": "2026-09-19T20:15:14.961336Z",
+    "updatedAt": "2026-09-19T20:17:38.148902Z"
+  },
+  "test-user-001": {
+    "userId": "test-user-001",
+    "name": "Test Student",
+    "klass": 6,
+    "xp": 0,
+    "streak": 1,
+    "lastActive": "2026-09-20",
+    "badges": [],
+    "subjects": {
+      "Mathematics": {
+        "Fractions": {
+          "score": 45,
+          "attempts": 0,
+          "lastAttempt": null
+        }
+      },
+      "Science": {
+        "States of Matter": {
+          "score": 58,
+          "attempts": 0,
+          "lastAttempt": null
+        }
+      },
+      "Social Science": {
+        "Civics": {
+          "score": 70,
+          "attempts": 0,
+          "lastAttempt": null
+        }
+      },
+      "English": {
+        "Comprehension": {
+          "score": 80,
+          "attempts": 0,
+          "lastAttempt": null
+        }
+      }
+    },
+    "wellness": {
+      "hydration": 0,
+      "breaks": 0,
+      "activities": 0,
+      "date": "2026-09-20"
+    },
+    "dailyGoals": [
+      {
+        "id": "quiz1",
+        "label": "Complete 1 practice quiz",
+        "done": false
+      },
+      {
+        "id": "water4",
+        "label": "Log 4 glasses of water",
+        "done": false
+      },
+      {
+        "id": "move1",
+        "label": "One movement break",
+        "done": false
+      },
+      {
+        "id": "chat1",
+        "label": "Ask your mentor a question",
+        "done": false
+      }
+    ],
+    "createdAt": "2026-09-19T21:39:02.051998Z",
+    "updatedAt": "2026-09-19T21:39:02.051998Z"
+  }
+}
