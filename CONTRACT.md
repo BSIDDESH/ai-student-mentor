@@ -81,5 +81,6 @@ Rule-based, not ML. Threshold: **score < 60**.
 
 ## 5. Bedrock model in use
 
-Model ID: TBD - still confirming which model this account has access to. See LEARNING.md.
-Region: us-east-1
+Model ID: ollama:llama3.1 (local, via Strands Agent, tunneled through ngrok).
+Note: Bedrock was the original plan but hit account-level access restrictions
+that could not be resolved before the deadline. See LEARNING.md for the full story.
