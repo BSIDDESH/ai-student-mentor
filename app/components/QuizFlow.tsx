@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import type { Profile, QuizQuestion } from "@/app/lib/types";
 import { generateQuiz, submitQuiz } from "@/app/lib/api";
-import { useCountUp, scoreColor, scoreTextColor, badgeInfo } from "@/app/lib/helpers";
+import { useCountUp, scoreColor, scoreTextColor, badgeInfo, weakTopics } from "@/app/lib/helpers";
 import { useToast } from "@/app/lib/toast";
 import { Check, X, ArrowRight, RotateCcw, Award, Sparkles, BookOpen } from "lucide-react";
 
@@ -24,6 +24,8 @@ export default function QuizFlow({ profile, setProfile, prefill, onDone }: Props
 
   const [selectedSubject, setSelectedSubject] = useState(defaultSubject);
   const [selectedTopic, setSelectedTopic] = useState(defaultTopic);
+  const [customTopic, setCustomTopic] = useState("");
+  const weak = weakTopics(profile.subjects);
   const [state, setState] = useState<QuizState>(prefill ? "loading" : "pick");
   const { showError } = useToast();
 
@@ -88,7 +90,7 @@ export default function QuizFlow({ profile, setProfile, prefill, onDone }: Props
       setSelectedOption(null);
       setIsAnswerRevealed(false);
     } else {
-      // Quiz finished — correctCount already includes this question's result
+      // Quiz finished - correctCount already includes this question's result
       const finalCorrect = correctCount;
 
       setState("loading");
@@ -106,14 +108,14 @@ export default function QuizFlow({ profile, setProfile, prefill, onDone }: Props
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Couldn't submit your answers. Please try again.";
         showError(msg);
-        setState("question"); // drop back — don't lose the student's answers
+        setState("question"); // drop back - don't lose the student's answers
       }
     }
   }
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
-      {/* ── STATE 1: PICK TOPIC ────────────────────────────────────── */}
+      {/* ── STATE 1: PICK TOPIC ── */}
       {state === "pick" && (
         <div className="bg-white rounded-2xl border border-stone-100 p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-6">
@@ -121,8 +123,8 @@ export default function QuizFlow({ profile, setProfile, prefill, onDone }: Props
               <BookOpen size={22} />
             </div>
             <div>
-              <h2 className="font-display text-xl font-bold text-stone-800">Choose Practice Quiz</h2>
-              <p className="text-sm text-stone-500">Pick a subject and topic to test your skills</p>
+              <h2 className="font-display text-xl font-bold text-stone-800">What do you want to practice today?</h2>
+              <p className="text-sm text-stone-500">Pick any subject and topic - or try something new</p>
             </div>
           </div>
 
@@ -136,6 +138,7 @@ export default function QuizFlow({ profile, setProfile, prefill, onDone }: Props
                   setSelectedSubject(s);
                   const topics = Object.keys(profile.subjects[s] || {});
                   setSelectedTopic(topics[0] || "");
+                  setCustomTopic("");
                 }}
                 className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm font-medium text-stone-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
               >
@@ -151,7 +154,10 @@ export default function QuizFlow({ profile, setProfile, prefill, onDone }: Props
               <label className="block text-sm font-semibold text-stone-700 mb-1.5">Topic</label>
               <select
                 value={selectedTopic}
-                onChange={(e) => setSelectedTopic(e.target.value)}
+                onChange={(e) => {
+                  setSelectedTopic(e.target.value);
+                  setCustomTopic("");
+                }}
                 className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm font-medium text-stone-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
               >
                 {Object.keys(profile.subjects[selectedSubject] || {}).map((t) => {
@@ -164,10 +170,48 @@ export default function QuizFlow({ profile, setProfile, prefill, onDone }: Props
                 })}
               </select>
             </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-stone-700 mb-1.5">
+                Or practice something else
+              </label>
+              <input
+                type="text"
+                value={customTopic}
+                onChange={(e) => setCustomTopic(e.target.value)}
+                placeholder="Type any topic, e.g. Arithmetic"
+                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm font-medium text-stone-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              />
+            </div>
+
+            {weak.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">
+                  ✨ Suggested for you
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {weak.map((w) => (
+                    <button
+                      key={`${w.subject}-${w.topic}`}
+                      onClick={() => {
+                        setSelectedSubject(w.subject);
+                        setSelectedTopic(w.topic);
+                        setCustomTopic("");
+                      }}
+                      className="text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 px-3 py-1.5 rounded-full hover:bg-rose-100 transition-colors"
+                    >
+                      {w.topic} — {w.score}%
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <button
-            onClick={() => startQuiz(selectedSubject, selectedTopic)}
+            onClick={() =>
+              startQuiz(selectedSubject, customTopic.trim() || selectedTopic)
+            }
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-display text-base font-semibold py-3.5 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
           >
             Start Quiz →
@@ -175,20 +219,20 @@ export default function QuizFlow({ profile, setProfile, prefill, onDone }: Props
         </div>
       )}
 
-      {/* ── STATE 2: LOADING SKELETON (MASCOT INTEGRATION) ─────────── */}
+      {/* ── STATE 2: LOADING SKELETON (MASCOT INTEGRATION) ── */}
       {state === "loading" && (
         <div className="bg-white rounded-2xl border border-stone-100 p-8 shadow-sm text-center">
-          {/* Mascot idle — thinking/studying pose */}
+          {/* Mascot idle - thinking/studying pose */}
           <div className="w-36 h-36 mx-auto mb-4">
             <img
               src="/mascot-idle.svg"
-              alt="AI Mentor writing questions…"
+              alt="AI Mentor writing questions..."
               className="w-full h-full object-contain"
               draggable={false}
             />
           </div>
           <h3 className="font-display text-xl font-bold text-stone-800 mb-2">
-            Writing 5 questions just for you…
+            Writing 5 questions just for you...
           </h3>
           <p className="text-sm text-stone-500 max-w-sm mx-auto mb-6">
             Adapting difficulty to Class {profile.klass} and tailoring to your previous attempts on {selectedTopic}.
@@ -201,7 +245,7 @@ export default function QuizFlow({ profile, setProfile, prefill, onDone }: Props
         </div>
       )}
 
-      {/* ── STATE 3: QUESTIONS (1 AT A TIME) ──────────────────────── */}
+      {/* ── STATE 3: QUESTIONS (1 AT A TIME) ── */}
       {state === "question" && questions[currentIndex] && (
         <div className="bg-white rounded-2xl border border-stone-100 p-6 shadow-sm">
           {/* Progress dots & Topic indicator */}
@@ -289,7 +333,7 @@ export default function QuizFlow({ profile, setProfile, prefill, onDone }: Props
           {isAnswerRevealed && (
             <div className="mb-6 p-4 rounded-xl bg-stone-50 border border-stone-200 text-sm">
               <p className="font-semibold text-stone-800 mb-1">
-                {selectedOption === questions[currentIndex].answerIndex ? "🎉 Correct!" : "💡 Not quite"}
+                {selectedOption === questions[currentIndex].answerIndex ? "✅ Correct!" : "❌ Not quite"}
               </p>
               <p className="text-stone-600 leading-relaxed">
                 {questions[currentIndex].explanation}
@@ -310,7 +354,7 @@ export default function QuizFlow({ profile, setProfile, prefill, onDone }: Props
         </div>
       )}
 
-      {/* ── STATE 4: RESULTS (THE 45% -> 68% MONEY SHOT) ─────────── */}
+      {/* ── STATE 4: RESULTS (THE 45% -> 68% MONEY SHOT) ── */}
       {state === "results" && resultData && (
         <ResultsView
           subject={selectedSubject}
@@ -356,7 +400,7 @@ function ResultsView({
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-2xl border border-stone-100 p-8 shadow-sm text-center">
-        <span className="text-4xl block mb-2">🎯</span>
+        <span className="text-4xl block mb-2">🎉</span>
         <h2 className="font-display text-2xl font-bold text-stone-900 mb-1">Practice Complete!</h2>
         <p className="text-sm text-stone-500 mb-6">
           You got <span className="font-bold text-stone-800">{correct}</span> out of {total} correct on {topic}
